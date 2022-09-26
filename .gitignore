@@ -3,3 +3,9 @@ bmiselect/.DS_Store
 .DS_Store
 .DS_Store
 .DS_Store
+.DS_Store
+.spyproject/config/backups/codestyle.ini.bak
+*.bak
+.spyproject/config/codestyle.ini
+*.ini
+*.pyc
