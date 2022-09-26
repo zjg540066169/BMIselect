@@ -12,7 +12,7 @@ You can install this package from pip with
 ## Requirement
 * Python >= 3.7
 * pymc3 >= 3.11.5
-* theano-pymc >= 1.1.2"
+* theano-pymc >= 1.1.2
 * mkl >= 2.4.0
 * mkl-service >= 2.4.0
 * numpy >= 1.19.2
