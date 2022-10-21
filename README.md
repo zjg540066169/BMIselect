@@ -27,3 +27,8 @@ You can install this package from pip with
 * matplotlib >= 3.3.2
 * sklearn >= 0.23.2
 * pandas >= 1.1.3
+
+
+## Disclaimer
+
+If you find there is any bug, please contact me: jungang.zou@gmail.com.
