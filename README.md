@@ -8,7 +8,7 @@ Multiple imputation(MI) is one of the major tools to deal with missing data. How
 * Spike-ridge prior
 * Spike-laplace prior
 
-For more details on the algorithm and its applications, please consult the following paper: "Variable Selection for Multiply-imputed Data: A Bayesian Framework".
+For more details on the algorithm and its applications, please consult the following paper: "Variable Selection for Multiply-imputed Data: A Bayesian Framework" (Arxiv: https://arxiv.org/abs/2211.00114).
 
 ## Installation
 
