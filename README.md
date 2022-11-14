@@ -135,9 +135,9 @@ The parameters for `sample` function are as follows:
 
 We can use `get_posterior_samples` function to get posterior samples:
 ```
-model1.get_posterior_samples(var_name = "beta", rescale = True)
-model2.get_posterior_samples(var_name = "alpha", rescale = True)
-model2.get_posterior_samples(var_name = "g", rescale = True)
+model1.get_posterior_samples(var_name = "beta", rescale = True)   # get posterior samples for the coefficients vector
+model2.get_posterior_samples(var_name = "alpha", rescale = True)  # get posterior samples for the intercept
+model2.get_posterior_samples(var_name = "g", rescale = True)      # get posterior samples for the hidden binary variables in discrete mixture models
 ```
 Here `var_name` is the variable we want to sample for. `rescale` specifies whether to return coefficients in the original scale; if it is False, then coefficients corresponding to standardized covariates are return; if it is True, all the coefficients are rescaled to the original scale. If `standardize = False` in initialization stage, `rescale` has no effect. For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector `beta` is `(n_chains, n_imputations * n_samples, n_features)`. And the dimension of intercept `alpha` is `(n_chains, n_imputations * n_samples)`.
 
