@@ -46,13 +46,12 @@ Different models impose different group-based prior distributions on <img src="h
      <th width="40%">Hyper-parameters</th>
    </tr>
    <tr>
-      <td style="text-align:center" width="25%" rowspan="8" colspan="1">Synthetic datasets</td>
-      <td style="text-align:center" width="13%" colspan="1" rowspan="2">SYN-FIX</td>
-      <td style="text-align:center" width="30%" colspan="1">Z = 3</td>
-      <td rowspan="4" >Kim, M. S., & Han, J. (2009). A particle-and-density based evolutionary clustering method for dynamic networks. Proceedings of the VLDB Endowment, 2(1), 622-633.</td>
+      <td style="text-align:center" width="25%" rowspan="4" colspan="1">Shrinkage Model</td>
+      <td style="text-align:center" width="13%" colspan="1" rowspan="2">Multi-Laplace</td>
+      <td style="text-align:center" width="30%" colspan="1">r</td>
    </tr>
    <tr>
-    <td style="text-align:center" width="30%" colspan="1">Z = 6</td>
+    <td style="text-align:center" width="30%" colspan="1">s</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="2">SYN-VAR</td>
