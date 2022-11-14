@@ -139,12 +139,24 @@ model1.get_posterior_samples(var_name = "beta", rescale = True)
 model2.get_posterior_samples(var_name = "alpha", rescale = True)
 model2.get_posterior_samples(var_name = "g", rescale = True)
 ```
-Here `var_name` is the variable we want to sample for; `rescale` specifies whether to return coefficients in the original scale. For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector `beta` is `(n_chains, n_imputations * n_samples, n_features)`. And the dimension of intercept `alpha` is `(n_chains, n_imputations * n_samples)`.
-
-
+Here `var_name` is the variable we want to sample for. `rescale` specifies whether to return coefficients in the original scale; if it is False, then coefficients corresponding to standardized covariates are return; if it is True, all the coefficients are rescaled to the original scale. If `standardize = False` in initialization stage, `rescale` has no effect. For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector `beta` is `(n_chains, n_imputations * n_samples, n_features)`. And the dimension of intercept `alpha` is `(n_chains, n_imputations * n_samples)`.
 
 ### Summary Statistics
-After sampling, `summary` function can be applied to 
+Our library provides a `summary` function to generate summary statistics for all the variables in the hierachical model:
+```
+summary_stats1 = model1.summary(rescale = True)
+print(summary_stats1)
+```
+Here `rescale` is the same as it in function `get_posterior_samples`.
+
+
+### Variable Selection
+Users can use `select` function to select important variables:
+```
+select1 = model1.select(value = 0.95, rescale = True) # Credible Interval Criterion for Shrinkage Models
+select2 = model2.select(value = 0.5,  rescale = True) # Cutting-off point for Discrete Mixture Models
+```
+The meaning of `value` depends on the type of model. For shrinkage models, `value` is the credible interval criterion for selection. For discrete mixture models, `value` stands for the cutting-off point for selection. For more details, please consult Chapter 3.2 in the paper: "Variable Selection for Multiply-imputed Data: A Bayesian Framework" (Arxiv: https://arxiv.org/abs/2211.00114).
 
 ## Disclaimer
 
