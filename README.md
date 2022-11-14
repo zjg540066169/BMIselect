@@ -93,7 +93,7 @@ The inference is done with posterior samples by running MCMC.
 
 ## Usage
 
-### Python Library
+### Modeling
 After installation from pip, we can import Bayesian MI-LASSO classes in Python shell:
 
 ```
@@ -127,13 +127,9 @@ The parameters for `sample` function are as follows:
 * n_burn(required): number of burn-in samples for each chain.
 * target_accept(default 0.9): target acceptance probability for NUTS.
 * max_treedepth(default 10): maximum tree depth for NUTS.
-* transfer_prob(default 0.9): the transfer probability of features obtained at last snapshot.
-* mutation_prob(default 0.9): the mutation probability of NSGA-II.
-* crossover_prob(default 0.9): the uniform crossover probability of NSGA-II.
-* max_num_cliques(default 5): the max depth of search tree. More details are included in paper.
-* first_round_generation(default None): the number of generations specified for the first network snapshot. Since TMOGA applies the ordinary NSGA-II framework without feature transfer mechanism at the first snapshot, we can specify more generations for the first network.
-* sde(default False): whether to use Shift-based Density Estimation Method to calculate crowding distance in NSGA-II (introduced in M. Li, S. Yang, X. Liu, Shift-based density estimation for pareto-based algorithms in manyobjective optimization, IEEE Transactions on Evolutionary Computation 18 (3) (2013) 348–365.).
-
+* n_chain(default 1): number of parallel chains to run.
+* n_thread(default 4): number of threads to run parallel computing.
+* seed(default None): random seed. If seed is None, seed is equals to the current time in seconds since the Epoch.
 
 ## Disclaimer
 
