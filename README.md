@@ -93,9 +93,8 @@ The inference is done with posterior samples by running MCMC.
 
 ## Usage
 
-### Modeling
+### Input
 After installation from pip, we can import Bayesian MI-LASSO classes in Python shell:
-
 ```
 from bmiselect.models.ARD import ARD
 from bmiselect.models.Horseshoe import Horseshoe
@@ -104,6 +103,7 @@ from bmiselect.models.Laplace import Laplace
 from bmiselect.models.Spike_laplace import Spike_laplace
 ```
 
+### Initialization
 Then we can use MI dataset to initialize the models:
 ```
 # shrinkage models
@@ -117,6 +117,7 @@ model2 = Spike_laplace(Y_array, X_array, standardize = True, lambda_ = 6/11, a =
 ```
 Here `Y_array` is a 2-d data array for response variable, its dimension is `(n_imputations, n_samples)`. `X_array` is a 3-d data array for explanatory variables, its dimension is `(n_imputations, n_samples, n_features)`. If the parameter `standardize` is True, X_array is standardized and then used to run MCMC chains. If it is False, the original X_array is used to calculate MCMC chains. Other parameters are hyper-parameters for each model.
 
+### Posterior Sampling
 After initialization, we can use `sample` function to run MCMC chains and get posterior samples:
 ```
 model1.sample(n_post = 1000, n_burn = 500, target_accept = 0.9, n_chain = 2, n_thread = 4, max_treedepth = 10, seed = 123)
@@ -130,6 +131,18 @@ The parameters for `sample` function are as follows:
 * n_chain(default 1): number of parallel chains to run.
 * n_thread(default 4): number of threads to run parallel computing.
 * seed(default None): random seed. If seed is None, seed is equals to the current time in seconds since the Epoch.
+
+For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector is `(n_chains, n_imputations * n_samples, n_features)`. We can use `get_posterior_samples` function to get posterior samples:
+```
+model1.get_posterior_samples(var_name = "beta", rescale = True)
+model2.get_posterior_samples(var_name = "alpha", rescale = True)
+model2.get_posterior_samples(var_name = "g", rescale = True)
+```
+Here `var_name` is the samples
+
+
+### Summary Statistics
+After sampling, `summary` function can be applied to 
 
 ## Disclaimer
 
