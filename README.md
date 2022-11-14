@@ -107,7 +107,7 @@ Then we can use MI dataset to initialize the models:
 ```
 model = Laplace(Y_array, X_array, standardize = True, r = 2, s = 15)
 ```
-Here Y_array is a 2-d data array for response variable, its dimension is (n_imputations, n_samples). X_array is a 3-d data array for explanatory variables, its dimension is (n_imputations, n_samples, n_features). If the parameter "standardize" is True, X_array is standardized and then used to run MCMC chains. If it is False, the original X_array is used to calculate MCMC chains.
+Here `Y_array` is a 2-d data array for response variable, its dimension is `(n_imputations, n_samples)`. `X_array` is a 3-d data array for explanatory variables, its dimension is `(n_imputations, n_samples, n_features)`. If the parameter `standardize` is True, X_array is standardized and then used to run MCMC chains. If it is False, the original X_array is used to calculate MCMC chains.
 
 
 ## Disclaimer
