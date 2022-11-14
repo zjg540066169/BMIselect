@@ -54,7 +54,7 @@ Different models impose different group-based prior distributions on <img src="h
     <td style="text-align:center" width="30%" colspan="1">s</td>
    </tr>
    <tr>
-      <td style="text-align:center" colspan="1" rowspan="1">ARD</td>
+      <td style="text-align:center" colspan="1" rowspan="1">ARD(Ridge)</td>
       <td style="text-align:center" width="30%" colspan="1">no</td>
    </tr>
    <tr>
@@ -62,9 +62,9 @@ Different models impose different group-based prior distributions on <img src="h
       <td style="text-align:center" width="30%" colspan="1">no</td>
    </tr>
    <tr>
-      <td style="text-align:center" colspan="1" rowspan="4">SYN-EVENT</td>
-      <td style="text-align:center" width="30%">Birth and Death</td>
-      <td rowspan="4">Greene, D., Doyle, D., & Cunningham, P. (2010, August). Tracking the evolution of communities in dynamic social networks. In 2010 international conference on advances in social networks analysis and mining (pp. 176-183). IEEE.</td>
+      <td style="text-align:center" colspan="1" rowspan="5">Discrete Mixture Model</td>
+      <td style="text-align:center" width="30%" rowspan="2">Spike-Ridge</td>
+      <img src="https://latex.codecogs.com/gif.latex?v_0" /> 
    
    <tr>
      <td style="text-align:center" colspan="1">Expansion and Contraction</td>
