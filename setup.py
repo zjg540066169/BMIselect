@@ -56,8 +56,7 @@ setup(
         "seaborn>=0.11.2",
         "arviz>=0.13.0",
         "xarray>=2022.11.0",
-        "statsmodels>=0.13.2",
-        
+        "statsmodels>=0.13.2"
         ],
     
     
