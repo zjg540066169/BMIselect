@@ -3,27 +3,31 @@
 """
 Created on Mon Nov 14 08:31:22 2022
 
-@author: zoujungang
+@author: Jungang Zou
 """
 
-from models.ARD import ARD
-from models.Horseshoe import Horseshoe
-from models.Spike_ridge import Spike_ridge
-from models.Ridge import Ridge
-from models.Laplace import Laplace
-from models.Spike_laplace import Spike_laplace
-
-from utils.evaluation import *
-from utils.genDS_MAR import genDS_MAR
-from utils.genDS_MCAR import genDS_MCAR
-
-
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 if __name__ == "__main__":
+    
+    from bmiselect.models.ARD import ARD
+    from bmiselect.models.Horseshoe import Horseshoe
+    from bmiselect.models.Spike_ridge import Spike_ridge
+    from bmiselect.models.Ridge import Ridge
+    from bmiselect.models.Laplace import Laplace
+    from bmiselect.models.Spike_laplace import Spike_laplace
+
+    from bmiselect.utils.evaluation import *
+    from bmiselect.utils.genDS_MAR import genDS_MAR
+    from bmiselect.utils.genDS_MCAR import genDS_MCAR
+
+
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    
+    
+    
     
     # parameters for generating data
     n = 100
