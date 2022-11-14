@@ -55,11 +55,11 @@ Different models impose different group-based prior distributions on <img src="h
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="1">ARD(Ridge)</td>
-      <td style="text-align:center" width="30%" colspan="1">no</td>
+      <td style="text-align:center" width="30%" colspan="1">No hyper-parameters</td>
    </tr>
    <tr>
     <td style="text-align:center" width="30%" colspan="1">Horseshoe</td>
-      <td style="text-align:center" width="30%" colspan="1">no</td>
+      <td style="text-align:center" width="30%" colspan="1">No hyper-parameters</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="5">Discrete Mixture Model</td>
