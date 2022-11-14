@@ -34,7 +34,7 @@ You can install this package from pip with
 
 
 
-## Hyper-parameters
+## Models
 This package is based on the linear regression model: <img src="https://latex.codecogs.com/gif.latex?Y=\alpha+X\beta+\epsilon" /> 
 
 Different models impose different group-based prior distributions on <img src="https://latex.codecogs.com/gif.latex?\beta" />. 
@@ -88,6 +88,10 @@ Different models impose different group-based prior distributions on <img src="h
    </tr>
 </tr>
 </table>
+
+
+## Usage
+
 
 ## Disclaimer
 
