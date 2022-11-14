@@ -41,20 +41,20 @@ Different models impose different group-based prior distributions on <img src="h
 
 <table>
    <tr>
-      <th >Type</th>
-      <th >Group-based Prior</th>
-     <th >Hyper-parameters</th>
-      <th >Default value</th>
+      <th align="center">Type</th>
+      <th align="center">Group-based Prior</th>
+     <th align="center">Hyper-parameters</th>
+      <th align="center">Default value</th>
    </tr>
    <tr>
-      <td style="text-align:center" rowspan="4" colspan="1">Shrinkage Model</td>
-      <td style="text-align:center" colspan="1" rowspan="2">Multi-Laplace</td>
-      <td style="text-align:center" colspan="1">r</td>
-      <td style="text-align:center" colspan="1">2</td>
+      <td style="text-align:center" align="center" rowspan="4" colspan="1">Shrinkage Model</td>
+      <td style="text-align:center" align="center" colspan="1" rowspan="2">Multi-Laplace</td>
+      <td style="text-align:center" align="center" colspan="1">r</td>
+      <td style="text-align:center" align="center" colspan="1">2</td>
    </tr>
    <tr>
-    <td style="text-align:center" colspan="1">s</td>
-      <td style="text-align:center" colspan="1">15</td>
+    <td style="text-align:center" align="center" colspan="1">s</td>
+      <td style="text-align:center"  align="center" colspan="1">15</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="1">ARD(Ridge)</td>
