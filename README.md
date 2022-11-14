@@ -39,8 +39,49 @@ This package is based on the linear regression model: <img src="https://latex.co
 
 Different models impose different group-based prior distributions on <img src="https://latex.codecogs.com/gif.latex?\beta" />. 
 
-
-
+<table>
+   <tr>
+      <th width="40%">Type</th>
+      <th width="40%">Model</th>
+     <th width="40%">Hyper-parameters</th>
+   </tr>
+   <tr>
+      <td style="text-align:center" width="25%" rowspan="8" colspan="1">Synthetic datasets</td>
+      <td style="text-align:center" width="13%" colspan="1" rowspan="2">SYN-FIX</td>
+      <td style="text-align:center" width="30%" colspan="1">Z = 3</td>
+      <td rowspan="4" >Kim, M. S., & Han, J. (2009). A particle-and-density based evolutionary clustering method for dynamic networks. Proceedings of the VLDB Endowment, 2(1), 622-633.</td>
+   </tr>
+   <tr>
+    <td style="text-align:center" width="30%" colspan="1">Z = 6</td>
+   </tr>
+   <tr>
+      <td style="text-align:center" colspan="1" rowspan="2">SYN-VAR</td>
+      <td style="text-align:center" width="30%" colspan="1">Z = 3</td>
+   </tr>
+   <tr>
+    <td style="text-align:center" width="30%" colspan="1">Z = 6</td>
+   </tr>
+   <tr>
+      <td style="text-align:center" colspan="1" rowspan="4">SYN-EVENT</td>
+      <td style="text-align:center" width="30%">Birth and Death</td>
+      <td rowspan="4">Greene, D., Doyle, D., & Cunningham, P. (2010, August). Tracking the evolution of communities in dynamic social networks. In 2010 international conference on advances in social networks analysis and mining (pp. 176-183). IEEE.</td>
+   
+   <tr>
+     <td style="text-align:center" colspan="1">Expansion and Contraction</td>
+   </tr>
+   <tr>
+      <td style="text-align:center" colspan="1">Intermittent Communities</td>
+   </tr>
+   <tr>
+      <td style="text-align:center" colspan="1">Merge and Split</td>
+   </tr>
+</tr>
+   <tr>
+      <td style="text-align:center" rowspan="1" >Real-world dataset</td>
+      <td style="text-align:center" colspan="2" >Mobile Phone Communication Network</td>
+      <td>http://visualdata.wustl.edu/varepository</td>
+   </tr>
+</table>
 
 ## Disclaimer
 
