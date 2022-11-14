@@ -42,7 +42,7 @@ Different models impose different group-based prior distributions on <img src="h
 <table>
    <tr>
       <th >Type</th>
-      <th >Model</th>
+      <th >Group-based Prior</th>
      <th >Hyper-parameters</th>
       <th >Default value</th>
    </tr>
