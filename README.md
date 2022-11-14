@@ -156,7 +156,23 @@ Users can use `select` function to select important variables:
 select1 = model1.select(value = 0.95, rescale = True) # Credible Interval Criterion for Shrinkage Models
 select2 = model2.select(value = 0.5,  rescale = True) # Cutting-off point for Discrete Mixture Models
 ```
-The meaning of `value` depends on the type of model. For shrinkage models, `value` is the credible interval criterion for selection. For discrete mixture models, `value` stands for the cutting-off point for selection. For more details, please consult Chapter 3.2 in the paper: "Variable Selection for Multiply-imputed Data: A Bayesian Framework" (Arxiv: https://arxiv.org/abs/2211.00114).
+The meaning of `value` depends on the type of models. For shrinkage models, `value` is the credible interval criterion for selection. For discrete mixture models, `value` stands for the cutting-off point for selection. For more details, please consult Chapter 3.2 in the paper: "Variable Selection for Multiply-imputed Data: A Bayesian Framework" (Arxiv: https://arxiv.org/abs/2211.00114).
+
+
+### Evaluation
+There are some evaluation functions in this library:
+```
+from bmiselect.utils.evaluation import *
+
+sensitivity(select = select1, truth = truth)                                           # sensitivity
+specificity(select = select2, truth = truth)                                           # specificity
+f1_score(select = select2, truth = truth)                                              # f1 score
+mse(beta, covariance, select = select1, X = X_array, Y = Y_array, intercept = True)    # mse, given coefficients and covariance matrix of ground truth
+```
+
+### Refitting Linear Regression
+
+
 
 ## Disclaimer
 
