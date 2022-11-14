@@ -47,12 +47,14 @@ Different models impose different group-based prior distributions on <img src="h
       <th >Default value</th>
    </tr>
    <tr>
-      <td style="text-align:center" width="25%" rowspan="4" colspan="1">Shrinkage Model</td>
-      <td style="text-align:center" width="13%" colspan="1" rowspan="2">Multi-Laplace</td>
-      <td style="text-align:center" width="30%" colspan="1">r</td>
+      <td style="text-align:center" rowspan="4" colspan="1">Shrinkage Model</td>
+      <td style="text-align:center" colspan="1" rowspan="2">Multi-Laplace</td>
+      <td style="text-align:center" colspan="1">r</td>
+      <td style="text-align:center" colspan="1">2</td>
    </tr>
    <tr>
-    <td style="text-align:center" width="30%" colspan="1">s</td>
+    <td style="text-align:center" colspan="1">s</td>
+      <td style="text-align:center" colspan="1">15</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="1">ARD(Ridge)</td>
