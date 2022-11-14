@@ -41,9 +41,10 @@ Different models impose different group-based prior distributions on <img src="h
 
 <table>
    <tr>
-      <th width="40%">Type</th>
-      <th width="40%">Model</th>
-     <th width="40%">Hyper-parameters</th>
+      <th >Type</th>
+      <th >Model</th>
+     <th >Hyper-parameters</th>
+      <th >Default value</th>
    </tr>
    <tr>
       <td style="text-align:center" width="25%" rowspan="4" colspan="1">Shrinkage Model</td>
