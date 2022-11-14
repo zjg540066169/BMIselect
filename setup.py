@@ -15,7 +15,7 @@ from setuptools import find_packages
 with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
     
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 setup(
     name='bmiselect',  # package name
@@ -48,7 +48,7 @@ setup(
         "pymc3>=3.11.5",
         "theano-pymc>=1.1.2",
         "mkl>=2.4.0",
-        "mkl-service>=2.4.0"
+        "mkl-service>=2.4.0",
         "numpy>=1.19.2",
         "matplotlib>=3.3.2",
         "scikit-learn>=0.23",
