@@ -162,17 +162,40 @@ The meaning of `value` depends on the type of models. For shrinkage models, `val
 ### Evaluation
 There are some evaluation functions in this library:
 ```
-from bmiselect.utils.evaluation import *
+from bmiselect.utils.evaluation import sensitivity, specificity, f1_score, mse
 
 sensitivity(select = select1, truth = truth)                                           # sensitivity
 specificity(select = select2, truth = truth)                                           # specificity
 f1_score(select = select2, truth = truth)                                              # f1 score
 mse(beta, covariance, select = select1, X = X_array, Y = Y_array, intercept = True)    # mse, given coefficients and covariance matrix of ground truth
 ```
+Here `select` and `truth` are binary vectors with length `(n_features)`. `select[i] = True` means i-th variable is selected.
+
 
 ### Refitting Linear Regression
+After we complete the variable selection by Bayesian MI-LASSO, users can apply `fit_lr` to fit ordinary linear regression separately on each imputed dataset. Alternatively, users can utilize `pooled_coefficients` and `pooled_covariance` to directly get pooled coefficients and covariance matrix with Rubin`s Rule.
+```
+from bmiselect.utils.evaluation import fit_lr, pooled_coefficients, pooled_covariance
+
+# refit linear regression by using selected variabels
+lr_models = fit_lr(select1, X_array, Y_array, intercept = True))
+for lr in lr_models:
+    print(lr.summary())
+
+# get pooled coefficients estimates by using Rubin`s rule
+lr_coef = pooled_coefficients(select2, X_array, Y_array, intercept = True))
+print(lr_coef)
+
+# get pooled covariance estimates by using Rubin`s rule
+lr_covariance = pooled_covariance(select2, X_array, Y_array, intercept = True))
+print(lr_covariance)
+```
+If `intercept = True`, then an intercept is added to each ordinary linear regression respecitively. If `intercept = False`, then no intercept is used in linear regression.
 
 
+### Example
+
+An example about how to use this library is included in `bmiselect/`
 
 ## Disclaimer
 
