@@ -89,6 +89,7 @@ Different models impose different group-based prior distributions on <img src="h
 </tr>
 </table>
 
+The inference is done with posterior samples by running MCMC. 
 
 ## Usage
 
@@ -105,9 +106,33 @@ from models.Spike_laplace import Spike_laplace
 
 Then we can use MI dataset to initialize the models:
 ```
-model = Laplace(Y_array, X_array, standardize = True, r = 2, s = 15)
+# shrinkage models
+model1 = Laplace(Y_array, X_array, standardize = True, r = 2, s = 15)
+# model1 = Horseshoe(Y_array, X_array, standardize = True)
+# model1 = Ridge(Y_array, X_array, standardize = True)
+
+# discrete mixture models
+model2 = Spike_laplace(Y_array, X_array, standardize = True, lambda_ = 6/11, a = 1, b = 1)
+# model2 = Spike_ridge(Y_array, X_array, standardize = True, p0 = 0.5, v0 = 4)
 ```
-Here `Y_array` is a 2-d data array for response variable, its dimension is `(n_imputations, n_samples)`. `X_array` is a 3-d data array for explanatory variables, its dimension is `(n_imputations, n_samples, n_features)`. If the parameter `standardize` is True, X_array is standardized and then used to run MCMC chains. If it is False, the original X_array is used to calculate MCMC chains.
+Here `Y_array` is a 2-d data array for response variable, its dimension is `(n_imputations, n_samples)`. `X_array` is a 3-d data array for explanatory variables, its dimension is `(n_imputations, n_samples, n_features)`. If the parameter `standardize` is True, X_array is standardized and then used to run MCMC chains. If it is False, the original X_array is used to calculate MCMC chains. Other parameters are hyper-parameters for each model.
+
+After initialization, we can use `sample` function to run MCMC chains and get posterior samples:
+```
+model1.sample(n_post = 1000, n_burn = 500, target_accept = 0.9, n_chain = 2, n_thread = 4, max_treedepth = 10, seed = 123)
+# model2.sample(n_post = 1000, n_burn = 500, target_accept = 0.9, n_chain = 2, n_thread = 4, max_treedepth = 10, seed = 123)
+```
+The parameters for `sample` function are as follows:
+* n_post(required): number of posterior samples for each chain.
+* n_burn(required): number of burn-in samples for each chain.
+* target_accept(default 0.9): target acceptance probability for NUTS.
+* max_treedepth(default 10): maximum tree depth for NUTS.
+* transfer_prob(default 0.9): the transfer probability of features obtained at last snapshot.
+* mutation_prob(default 0.9): the mutation probability of NSGA-II.
+* crossover_prob(default 0.9): the uniform crossover probability of NSGA-II.
+* max_num_cliques(default 5): the max depth of search tree. More details are included in paper.
+* first_round_generation(default None): the number of generations specified for the first network snapshot. Since TMOGA applies the ordinary NSGA-II framework without feature transfer mechanism at the first snapshot, we can specify more generations for the first network.
+* sde(default False): whether to use Shift-based Density Estimation Method to calculate crowding distance in NSGA-II (introduced in M. Li, S. Yang, X. Liu, Shift-based density estimation for pareto-based algorithms in manyobjective optimization, IEEE Transactions on Evolutionary Computation 18 (3) (2013) 348–365.).
 
 
 ## Disclaimer
