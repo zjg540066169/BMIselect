@@ -3,20 +3,27 @@
 """
 Created on Mon Sep 26 10:02:23 2022
 
-@author: zoujungang
+This class provides the model of Spike-Laplace model
+
+Three hyperparameters: lambda, a, b
+
+@author: Jungang Zou
 """
 
 import pymc3 as pm3
 import theano.tensor as tt
 import numpy as np
 from theano import printing, function
-from Bayesian_MI_LASSO import Bmi_lasso
+from models.Bayesian_MI_LASSO import Bmi_lasso
 import time
 
 
 class Spike_laplace(Bmi_lasso):
     def __init__(self, y, X, standardize = True, lambda_ = 6/11, a = 1, b = 1):
         super().__init__(y, X, standardize)
+        if lambda_ <= 0 or a <= 0 or b <= 0:
+            raise Exception("All hyper-parameters should be positive")
+        self.type_model = "discrete"
         with self.model:
             # set parameter
             self.lambda_ = lambda_
@@ -26,7 +33,7 @@ class Spike_laplace(Bmi_lasso):
             # set prior
             self.logsigma2 = pm3.Flat("logsigma2")
             self.sigma2 = pm3.Deterministic("sigma2", tt.pow(tt.exp(self.logsigma2), 2))
-            self.pi = pm3.Beta("pi", alpha = self.a, beta = self.b, shape = self.p)
+            self.pi = pm3.Beta("g", alpha = self.a, beta = self.b, shape = self.p)
             self.tg = pm3.Gamma("tau", alpha = (self.num_of_imputation + 1) / 2, beta = 2/(self.num_of_imputation * self.lambda_), shape = self.p)
             self.tg0 = pm3.Gamma("tau0", alpha = (self.num_of_imputation + 1) / 2, beta = 2/(self.num_of_imputation * self.lambda_))
             
@@ -46,7 +53,7 @@ class Spike_laplace(Bmi_lasso):
   
 if __name__ == "__main__":
     
-    from genDS_MAR import genDS_MAR
+    from bmiselect.utils.genDS_MAR import genDS_MAR
     n = 100
     p = 20
     K = 5
@@ -103,14 +110,8 @@ if __name__ == "__main__":
     -1.8,0,0,0,0,0,0,0,0,0,0.5,0.5
     ]).reshape(10, 12)
     miss_index = np.arange(10, 20)
-    gendata = genDS_MAR(123, alpha_LM, miss_index, n, p, covmat, beta, sigma) 
-    data = gendata["M"]
-    X_array = []
-    Y_array = []
-    for i in range(K):
-        X_array.append(data[data.loc[:, "imp"] == i].iloc[:, 1:(p + 1)].to_numpy())
-        Y_array.append(data[data.loc[:, "imp"] == i].iloc[:, 0].to_numpy())
-    X_array = np.array(X_array)
-    Y_array = np.array(Y_array)
+    gendata = genDS_MAR(n, p, 5, alpha_LM, miss_index,  covmat, beta, sigma, seed = 123) 
+    X_array = gendata["M_X"]
+    Y_array = gendata["M_Y"]
     model = Spike_laplace(Y_array, X_array)
     model.sample(10, 10, n_chain = 3)

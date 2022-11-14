@@ -27,6 +27,18 @@ You can install this package from pip with
 * matplotlib >= 3.3.2
 * sklearn >= 0.23.2
 * pandas >= 1.1.3
+* seaborn>=0.11.2
+* arviz>=0.13.0
+* xarray>=2022.11.0
+* statsmodels>=0.13.2
+
+
+
+## Models
+This package is based on linear regression model:
+
+- <img src="https://latex.codecogs.com/gif.latex?Y=\alpha+X\beta+\epsilon" /> 
+
 
 
 ## Disclaimer

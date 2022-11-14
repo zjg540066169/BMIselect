@@ -18,7 +18,7 @@ with open("README.md") as f:
 VERSION = '0.0.1'
 
 setup(
-    name='BMIselect',  # package name
+    name='bmiselect',  # package name
     version=VERSION,  # package version
     author="Jungang Zou",
     author_email="jungang.zou@gmail.com",
@@ -53,6 +53,11 @@ setup(
         "matplotlib>=3.3.2",
         "scikit-learn>=0.23",
         "pandas>=1.1.3",
+        "seaborn>=0.11.2",
+        "arviz>=0.13.0",
+        "xarray>=2022.11.0",
+        "statsmodels>=0.13.2",
+        
         ],
     
     

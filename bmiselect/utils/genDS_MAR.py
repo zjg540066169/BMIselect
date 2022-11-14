@@ -3,22 +3,43 @@
 """
 Created on Thu Jul 15 15:58:59 2021
 
-@author: jungang
+This function is used to generate data under Miss At Random(MAR) assumption.
+
+@author: Jungang Zou
 """
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from statsmodels.imputation import mice
+import time
 
 
-
-
-
-
-def genDS_MAR(s, alpha, miss_index, n, p, covmat, beta, sigma, cat = False):
-    np.random.seed(s)
+def genDS_MAR(n, p, n_imp, alpha, miss_index, covmat, beta, sigma, cat = False, seed = None):
+    # Input parameters:
+    # n: number of samples.
+    # p: number of covariates.
+    # n_imp: number of generated multiply-imputation set.
+    # alpha: a matrix of coefficients to calculate a logistic function to generate missingness. More details can be found in our manuscript.
+    # missing index: a numerical vector to indicate which variables are missing. For example: [2,5,10] indicates 2ed, 5th, 10th variables are missing.
+    # covmat: covariance matrix to generate covariates.
+    # beta: regression coefficients to generate response variable.
+    # sigma: regression variance to generate response variable.
+    # cat: indicate if generated covariates are binary. If cat is True, then X = 0 if X < 0; and X = 1 if X >= 0.
+    # seed: random seed.
+    
+    # Output parameters:
+    # a dictionary:
+        # "M"  : multiply imputed data with a long data frame, dim = (n * n_imp, p + 1)
+        # "M_X": multiply imputed covariates, dim = (n_imp, n, p)
+        # "M_Y": multiply imputed response variable, dim = (n_imp, n)
+        # “C”  : complete case only, the missing samples are deleted.
+        # "O"  : original data without missing values
+        # "avg": averaged each covariate across multiply-imputed data
+        # "ncom" : number of complete cases
+    if seed is None:
+        seed = time.time()
+    np.random.seed(seed)
     
     # compound symmetric correlation matrix with off-diagonal value of "corr"
     C = np.random.multivariate_normal(mean = np.repeat(0, p), cov = covmat, size = n)
@@ -57,8 +78,8 @@ def genDS_MAR(s, alpha, miss_index, n, p, covmat, beta, sigma, cat = False):
         imp.set_imputer('y', formula=fml, model_class = sm.Logit)
     else:
         imp.set_imputer('y', formula=fml)
-    for j in range(5):
-        imp.update_all(5)
+    for j in range(n_imp):
+        imp.update_all(n_imp)
         data = imp.data.copy()
         data.loc[:, "id"] = data.index
         data.loc[:, "imp"] = j
@@ -67,9 +88,6 @@ def genDS_MAR(s, alpha, miss_index, n, p, covmat, beta, sigma, cat = False):
     
     
     # multiple imputation
-    #IMP = mice(ds.I, meth="norm", seed=s, printFlag=FALSE)
-    #M = complete(IMP, "long")
-    #M = cbind(M[,3:23],M[,1:2])
     M = pd.concat(imputed_dataset, axis = 0)
     
     
@@ -81,17 +99,21 @@ def genDS_MAR(s, alpha, miss_index, n, p, covmat, beta, sigma, cat = False):
     complete = np.logical_not(np.isnan(I.sum(1)))
     n_C = complete.sum()
     
-  
-    
-  
     # Output data sets
     ds_M = M  # multiply imputed data with a long data frame
+    X_array = []
+    Y_array = []
+    for i in range(n_imp):
+        X_array.append(ds_M[ds_M.loc[:, "imp"] == i].iloc[:, 1:(p + 1)].to_numpy())
+        Y_array.append(ds_M[ds_M.loc[:, "imp"] == i].iloc[:, 0].to_numpy())
+    X_array = np.array(X_array)
+    Y_array = np.array(Y_array)
     ds_C = ds_I[complete]  # data with complete cases only
     ds_O = np.concatenate((Y.reshape(-1, 1), C), axis = 1)  # original data without missing values
     ds_avg = avg # data with average imputed data
     
   
-    return {"M" : ds_M, "C" : ds_C, "O" : ds_O, "avg" : ds_avg, "ncom" : n_C}
+    return {"M" : ds_M, "M_X": X_array, "M_Y": Y_array, "C" : ds_C, "O" : ds_O, "avg" : ds_avg, "ncom" : n_C}
 
 
 if __name__ == "__main__":
@@ -147,4 +169,5 @@ if __name__ == "__main__":
             -4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.5,0.5
             ]).reshape(20, 22)
     
-    data1 = genDS_MAR(s, alpha_LM, miss_index, n, p, covmat, beta, sigma)
+    data1 = genDS_MAR(n, p, 5, alpha_LM, miss_index, covmat, beta, sigma, seed = s)
+

@@ -14,6 +14,11 @@ from bmiselect.models.Ridge import Ridge
 from bmiselect.models.Spike_laplace import Spike_laplace
 from bmiselect.models.Spike_ridge import Spike_ridge
 
+from bmiselect.utils.genDS_MAR import genDS_MAR
+from bmiselect.utils.genDS_MCAR import genDS_MCAR
+from bmiselect.utils.evaluation import *
 
-__version__ = "0.0.0"
+
+
+__version__ = "0.1.0"
 __author__ = """Jungang Zou (jungang.zou@gmail.com)"""

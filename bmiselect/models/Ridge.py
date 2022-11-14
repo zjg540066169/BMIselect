@@ -3,20 +3,25 @@
 """
 Created on Mon Sep 26 09:39:56 2022
 
-@author: zoujungang
+This class provides the model of Ridge. It is the same as ARD model.
+
+No hyperparameters.
+
+@author: Jungang Zou
 """
 
 import pymc3 as pm3
 import theano.tensor as tt
 import numpy as np
 from theano import printing, function
-from Bayesian_MI_LASSO import Bmi_lasso
+from models.Bayesian_MI_LASSO import Bmi_lasso
 import time
 
 
 class Ridge(Bmi_lasso):
     def __init__(self, y, X, standardize = True):
         super().__init__(y, X, standardize)
+        self.type_model = "shrinkage"
         with self.model:
             
             # set prior
@@ -44,7 +49,7 @@ class Ridge(Bmi_lasso):
             
 if __name__ == "__main__":
     
-    from genDS_MAR import genDS_MAR
+    from bmiselect.utils.genDS_MAR import genDS_MAR
     n = 100
     p = 20
     K = 5
@@ -101,14 +106,8 @@ if __name__ == "__main__":
     -1.8,0,0,0,0,0,0,0,0,0,0.5,0.5
     ]).reshape(10, 12)
     miss_index = np.arange(10, 20)
-    gendata = genDS_MAR(123, alpha_LM, miss_index, n, p, covmat, beta, sigma) 
-    data = gendata["M"]
-    X_array = []
-    Y_array = []
-    for i in range(K):
-        X_array.append(data[data.loc[:, "imp"] == i].iloc[:, 1:(p + 1)].to_numpy())
-        Y_array.append(data[data.loc[:, "imp"] == i].iloc[:, 0].to_numpy())
-    X_array = np.array(X_array)
-    Y_array = np.array(Y_array)
+    gendata = genDS_MAR(n, p, 5, alpha_LM, miss_index,  covmat, beta, sigma, seed = 123) 
+    X_array = gendata["M_X"]
+    Y_array = gendata["M_Y"]
     model = Ridge(Y_array, X_array)
-    model.sample(10, 10, n_chain = 3)
+    model.sample(10, 10, n_chain = 1)

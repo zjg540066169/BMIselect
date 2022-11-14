@@ -3,20 +3,29 @@
 """
 Created on Mon Sep 26 09:46:09 2022
 
-@author: zoujungang
+This class provides the model of Spike-Ridge model
+
+Two hyperparameters: p0 and v0.
+
+@author: Jungang Zou
 """
 
 import pymc3 as pm3
 import theano.tensor as tt
 import numpy as np
 from theano import printing, function
-from Bayesian_MI_LASSO import Bmi_lasso
+from models.Bayesian_MI_LASSO import Bmi_lasso
 import time
 
 
 class Spike_ridge(Bmi_lasso):
     def __init__(self, y, X, standardize = True, p0 = 0.5, v0 = None):
         super().__init__(y, X, standardize)
+        if p0 < 0 or v0 < 0:
+            raise Exception("All hyper-parameters should be non-negative")
+        if p0 > 1:
+            raise Exception("The value of p0 should be between [0, 1]")
+        self.type_model = "discrete"
         with self.model:
             # set parameter
             self.p0 = p0
@@ -44,7 +53,9 @@ class Spike_ridge(Bmi_lasso):
             
 if __name__ == "__main__":
     
-    from genDS_MAR import genDS_MAR
+    from bmiselect.utils.genDS_MAR import genDS_MAR
+    from bmiselect.utils.evaluation import *
+    
     n = 100
     p = 20
     K = 5
@@ -101,14 +112,13 @@ if __name__ == "__main__":
     -1.8,0,0,0,0,0,0,0,0,0,0.5,0.5
     ]).reshape(10, 12)
     miss_index = np.arange(10, 20)
-    gendata = genDS_MAR(123, alpha_LM, miss_index, n, p, covmat, beta, sigma) 
-    data = gendata["M"]
-    X_array = []
-    Y_array = []
-    for i in range(K):
-        X_array.append(data[data.loc[:, "imp"] == i].iloc[:, 1:(p + 1)].to_numpy())
-        Y_array.append(data[data.loc[:, "imp"] == i].iloc[:, 0].to_numpy())
-    X_array = np.array(X_array)
-    Y_array = np.array(Y_array)
+    gendata = genDS_MAR(n, p, 5, alpha_LM, miss_index,  covmat, beta, sigma, seed = 123) 
+    X_array = gendata["M_X"]
+    Y_array = gendata["M_Y"]
     model = Spike_ridge(Y_array, X_array)
     model.sample(10, 10, n_chain = 3)
+    select = model.select(0.5)
+    
+    
+    
+    
