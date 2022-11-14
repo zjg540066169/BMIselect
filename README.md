@@ -58,29 +58,33 @@ Different models impose different group-based prior distributions on <img src="h
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="1">ARD(Ridge)</td>
-      <td style="text-align:center" width="30%" colspan="1">No hyper-parameters</td>
+      <td style="text-align:center" colspan="2">No hyper-parameters</td>
    </tr>
    <tr>
-    <td style="text-align:center" width="30%" colspan="1">Horseshoe</td>
-      <td style="text-align:center" width="30%" colspan="1">No hyper-parameters</td>
+    <td style="text-align:center" colspan="1">Horseshoe</td>
+      <td style="text-align:center" colspan="2">No hyper-parameters</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="5">Discrete Mixture Model</td>
-      <td style="text-align:center" width="30%" rowspan="2">Spike-Ridge</td>
-      <td style="text-align:center" width="30%" rowspan="1">p0</td>
-   
+      <td style="text-align:center" rowspan="2">Spike-Ridge</td>
+      <td style="text-align:center" rowspan="1">p0</td>
+      <td style="text-align:center" rowspan="1">0.5</td>
    <tr>
      <td style="text-align:center" colspan="1">v0</td>
+      <td style="text-align:center" colspan="1">4</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="3">Spike-Laplace</td>
       <td style="text-align:center" colspan="1">lambda</td>
+      <td style="text-align:center" colspan="1">6/11</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1">a</td>
+      <td style="text-align:center" colspan="1">1</td>
    </tr>
       <tr>
       <td style="text-align:center" colspan="1">b</td>
+         <td style="text-align:center" colspan="1">1</td>
    </tr>
 </tr>
 </table>
