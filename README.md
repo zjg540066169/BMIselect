@@ -97,11 +97,11 @@ The inference is done with posterior samples by running MCMC.
 After installation from pip, we can import Bayesian MI-LASSO classes in Python shell:
 
 ```
-from models.ARD import ARD
-from models.Horseshoe import Horseshoe
-from models.Spike_ridge import Spike_ridge
-from models.Laplace import Laplace
-from models.Spike_laplace import Spike_laplace
+from bmiselect.models.ARD import ARD
+from bmiselect.models.Horseshoe import Horseshoe
+from bmiselect.models.Spike_ridge import Spike_ridge
+from bmiselect.models.Laplace import Laplace
+from bmiselect.models.Spike_laplace import Spike_laplace
 ```
 
 Then we can use MI dataset to initialize the models:
