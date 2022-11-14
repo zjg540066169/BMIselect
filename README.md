@@ -54,11 +54,12 @@ Different models impose different group-based prior distributions on <img src="h
     <td style="text-align:center" width="30%" colspan="1">s</td>
    </tr>
    <tr>
-      <td style="text-align:center" colspan="1" rowspan="2">SYN-VAR</td>
-      <td style="text-align:center" width="30%" colspan="1">Z = 3</td>
+      <td style="text-align:center" colspan="1" rowspan="1">ARD</td>
+      <td style="text-align:center" width="30%" colspan="1">no</td>
    </tr>
    <tr>
-    <td style="text-align:center" width="30%" colspan="1">Z = 6</td>
+    <td style="text-align:center" width="30%" colspan="1">Horseshoe</td>
+      <td style="text-align:center" width="30%" colspan="1">no</td>
    </tr>
    <tr>
       <td style="text-align:center" colspan="1" rowspan="4">SYN-EVENT</td>
