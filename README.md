@@ -35,10 +35,9 @@ You can install this package from pip with
 
 
 ## Models
-This package is based on linear regression model:
+This package is based on linear regression model: <img src="https://latex.codecogs.com/gif.latex?Y=\alpha+X\beta+\epsilon" /> 
 
-- <img src="https://latex.codecogs.com/gif.latex?Y=\alpha+X\beta+\epsilon" /> 
-
+Different models have different prior distributions on - <img src="https://latex.codecogs.com/gif.latex?\beta" />.
 
 
 ## Disclaimer
