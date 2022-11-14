@@ -64,7 +64,7 @@ Different models impose different group-based prior distributions on <img src="h
    <tr>
       <td style="text-align:center" colspan="1" rowspan="5">Discrete Mixture Model</td>
       <td style="text-align:center" width="30%" rowspan="2">Spike-Ridge</td>
-      <td src="https://latex.codecogs.com/gif.latex?v_0" /> 
+      <td style="text-align:center" width="30%" rowspan="1" src="https://latex.codecogs.com/gif.latex?v_0" /> 
    
    <tr>
      <td style="text-align:center" colspan="1">Expansion and Contraction</td>
