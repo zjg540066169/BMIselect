@@ -195,7 +195,7 @@ If `intercept = True`, then an intercept is added to each ordinary linear regres
 
 ### Example
 
-An example about how to use this library is included in `bmiselect/`
+Examples about how to use this library are included in `bmiselect/main.py`.
 
 ## Disclaimer
 
