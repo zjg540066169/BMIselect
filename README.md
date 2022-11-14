@@ -70,17 +70,16 @@ Different models impose different group-based prior distributions on <img src="h
      <td style="text-align:center" colspan="1">v0</td>
    </tr>
    <tr>
-      <td style="text-align:center" colspan="1">Intermittent Communities</td>
+      <td style="text-align:center" colspan="1" rowspan="3">Spike-Laplace</td>
+      <td style="text-align:center" colspan="1">lambda</td>
    </tr>
    <tr>
-      <td style="text-align:center" colspan="1">Merge and Split</td>
+      <td style="text-align:center" colspan="1">a</td>
+   </tr>
+      <tr>
+      <td style="text-align:center" colspan="1">b</td>
    </tr>
 </tr>
-   <tr>
-      <td style="text-align:center" rowspan="1" >Real-world dataset</td>
-      <td style="text-align:center" colspan="2" >Mobile Phone Communication Network</td>
-      <td>http://visualdata.wustl.edu/varepository</td>
-   </tr>
 </table>
 
 ## Disclaimer
