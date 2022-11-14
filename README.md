@@ -133,13 +133,13 @@ The parameters for `sample` function are as follows:
 * n_thread(default 4): number of threads to run parallel computing.
 * seed(default None): random seed. If seed is None, seed is equals to the current time in seconds since the Epoch.
 
-For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector is `(n_chains, n_imputations * n_samples, n_features)`. We can use `get_posterior_samples` function to get posterior samples:
+We can use `get_posterior_samples` function to get posterior samples:
 ```
 model1.get_posterior_samples(var_name = "beta", rescale = True)
 model2.get_posterior_samples(var_name = "alpha", rescale = True)
 model2.get_posterior_samples(var_name = "g", rescale = True)
 ```
-Here `var_name` is the samples
+Here `var_name` is the variable we want to sample for; `rescale` specifies whether to return coefficients in the original scale. For MI data, we simply mixed up the posterior samples for each grouped coefficient among all MI sets. So the dimension of posterior samples for coefficients vector `beta` is `(n_chains, n_imputations * n_samples, n_features)`. And the dimension of intercept `alpha` is `(n_chains, n_imputations * n_samples)`.
 
 
 
