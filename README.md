@@ -92,6 +92,7 @@ Different models impose different group-based prior distributions on <img src="h
 The inference is done with posterior samples by running MCMC. 
 
 ## Usage
+Examples about how to use this library are included in `bmiselect/main.py`.
 
 ### Input
 After installation from pip, we can import Bayesian MI-LASSO classes in Python shell:
@@ -192,10 +193,6 @@ print(lr_covariance)
 ```
 If `intercept = True`, then an intercept is added to each ordinary linear regression respecitively. If `intercept = False`, then no intercept is used in linear regression.
 
-
-### Example
-
-Examples about how to use this library are included in `bmiselect/main.py`.
 
 ## Disclaimer
 
