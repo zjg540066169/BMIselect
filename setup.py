@@ -15,7 +15,7 @@ from setuptools import find_packages
 with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
     
-VERSION = '0.0.2'
+VERSION = '0.0.8'
 
 setup(
     name='bmiselect',  # package name
@@ -49,14 +49,14 @@ setup(
         "theano-pymc>=1.1.2",
         "mkl>=2.4.0",
         "mkl-service>=2.4.0",
-        "numpy>=1.19.2",
-        "matplotlib>=3.3.2",
-        "scikit-learn>=0.23",
-        "pandas>=1.1.3",
-        "seaborn>=0.11.2",
-        "arviz>=0.13.0",
-        "xarray>=2022.11.0",
-        "statsmodels>=0.13.2"
+        "numpy",
+        "matplotlib",
+        "scikit-learn",
+        "pandas",
+        "seaborn",
+        "arviz",
+        "xarray",
+        "statsmodels"
         ],
     
     

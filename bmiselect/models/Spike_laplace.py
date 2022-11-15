@@ -14,7 +14,7 @@ import pymc3 as pm3
 import theano.tensor as tt
 import numpy as np
 from theano import printing, function
-from models.Bayesian_MI_LASSO import Bmi_lasso
+from bmiselect.models.Bayesian_MI_LASSO import Bmi_lasso
 import time
 
 
