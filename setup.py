@@ -15,7 +15,7 @@ from setuptools import find_packages
 with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
     
-VERSION = '0.0.8'
+VERSION = '0.0.9'
 
 setup(
     name='bmiselect',  # package name
