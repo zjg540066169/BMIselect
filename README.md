@@ -12,7 +12,9 @@ For more details on the algorithm and its applications, please consult the follo
 
 ## Installation
 
-You can install this package from pip with
+Before install `BMIselect`, please make sure `pymc3` and `theano-pymc` has been installed. For more details, please refer to https://docs.pymc.io/en/v3/index.html.
+
+After `pymc3` and `theano-pymc` have been successfully installed, you can install this package from pip with
 
 `pip install bmiselect`
 
