@@ -29,3 +29,4 @@ build/lib/bmiselect/utils/genDS_MAR.py
 build/lib/bmiselect/utils/genDS_MCAR.py
 dist/bmiselect-0.0.0-py3-none-any.whl
 dist/bmiselect-0.0.0.tar.gz
+.Rproj.user
