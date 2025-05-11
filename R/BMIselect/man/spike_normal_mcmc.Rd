@@ -27,7 +27,7 @@ spike_normal_mcmc(
 
 \item{p0}{Prior inclusion probability for each coefficient. Default: \code{0.5}.}
 
-\item{v02}{Prior slab variance multiplier (i.e., \eqn{v_0^2}). Default: \code{2}.}
+\item{v02}{Prior slab variance multiplier. Default: \code{2}.}
 
 \item{nburn}{Number of burn-in iterations. Default: \code{4000}.}
 
@@ -59,6 +59,5 @@ A list containing posterior draws of:
 \description{
 Implements Bayesian variable selection using a spike-and-normal prior:
 each coefficient is either zero (with probability \code{1 - p0}) or drawn
-from a normal distribution with variance \code{v0^2 \cdot \sigma^2}. This
-is performed in a collapsed Gibbs sampler across multiply-imputed datasets.
+from a normal distribution. This is performed in a collapsed Gibbs sampler across multiply-imputed datasets.
 }

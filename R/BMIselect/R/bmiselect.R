@@ -1,9 +1,9 @@
-source("R/ARD.R")
-source("R/Horseshoe.R")
-source("R/Multi_Laplace.R")
-source("R/Spike_Normal.R")
-source("R/Spike_Laplace.R")
-source("R/utils.R")
+#source("R/ARD.R")
+#source("R/Horseshoe.R")
+#source("R/Multi_Laplace.R")
+#source("R/Spike_Normal.R")
+#source("R/Spike_Laplace.R")
+#source("R/utils.R")
 
 
 
@@ -69,7 +69,7 @@ source("R/utils.R")
 #' @examples
 #' # simulate 5 imputed datasets, n = 100, p = 10
 #' X <- array(rnorm(5 * 100 * 10), dim = c(5, 100, 10))
-#' Y <- rnorm(5 * 100)
+#' Y <- matrix(rnorm(5 * 100), nrow = 5, ncol = 100)
 #'
 #' # run two chains in parallel
 #' out <- bmiselect(
@@ -88,6 +88,9 @@ source("R/utils.R")
 #' str(out)
 #'
 #' @export
+#'
+#' @importFrom stats as.formula coef dgamma dlnorm gaussian glm lm median plogis predict quantile rbeta rbinom rcauchy residuals rgamma rlnorm rnorm runif sd var vcov
+
 
 bmiselect = function(X, Y, model, standardize = FALSE, shrinkage_sym_CI = seq(0.05, 0.95, by = 0.05), spike_slab_threshold = seq(0.05, 0.95, by = 0.05), bic_select = TRUE, nburn = 4000, npost = 4000, seed = NULL, nchain = 1, ncores = 1, verbose = T, printevery = 1000, ...){
   # -------------------------------

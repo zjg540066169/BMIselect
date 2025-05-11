@@ -98,7 +98,7 @@ five models and obtain posterior draws, and (optionally) BIC-based best model se
 \examples{
 # simulate 5 imputed datasets, n = 100, p = 10
 X <- array(rnorm(5 * 100 * 10), dim = c(5, 100, 10))
-Y <- rnorm(5 * 100)
+Y <- matrix(rnorm(5 * 100), nrow = 5, ncol = 100)
 
 # run two chains in parallel
 out <- bmiselect(

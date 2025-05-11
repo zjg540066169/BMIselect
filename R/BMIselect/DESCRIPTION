@@ -1,12 +1,37 @@
 Package: BMIselect
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Datasets
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(
+      person("Jungang", "Zou", email = "jungang.zou@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-5221-1489")),
+      person("Sijian", "Wang", role = "aut"),
+      person("Qixuan", "Chen", email = "qc2138@cumc.columbia.edu", role = "aut")
+    )
+Description: Implements five Bayesian MI-LASSO models for variable selection on 
+  multiply-imputed datasets, using shrinkage priors (Multi_Laplace, Horseshoe, ARD) 
+  and spike-and-slab priors (Spike_Normal, Spike_Laplace). Provides tools for MCMC-based 
+  model fitting, posterior-based variable selection, and hyperparameter tuning. Methods 
+  support continuous outcomes only.
+License: Apache License (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+LazyData: true
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    MCMCpack,
+    mvnfast,
+    GIGrvg,
+    MASS,
+    Rfast,
+    foreach,
+    doParallel,
+    arm,
+    coda
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+

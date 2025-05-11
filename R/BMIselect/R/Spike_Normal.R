@@ -200,14 +200,13 @@ pooledResidualVariance <- function(M_X, M_Y) {
 #'
 #' Implements Bayesian variable selection using a spike-and-normal prior:
 #' each coefficient is either zero (with probability \code{1 - p0}) or drawn
-#' from a normal distribution with variance \code{v0^2 \cdot \sigma^2}. This
-#' is performed in a collapsed Gibbs sampler across multiply-imputed datasets.
+#' from a normal distribution. This is performed in a collapsed Gibbs sampler across multiply-imputed datasets.
 #'
 #' @param X A 3D array of predictors with dimensions \code{D x n x p}.
 #' @param Y A matrix of outcomes with dimensions \code{D x n}.
 #' @param standardize Logical; whether to standardize \code{X} within each dataset. Default: \code{TRUE}.
 #' @param p0 Prior inclusion probability for each coefficient. Default: \code{0.5}.
-#' @param v02 Prior slab variance multiplier (i.e., \eqn{v_0^2}). Default: \code{2}.
+#' @param v02 Prior slab variance multiplier. Default: \code{2}.
 #' @param nburn Number of burn-in iterations. Default: \code{4000}.
 #' @param npost Number of posterior samples to store. Default: \code{4000}.
 #' @param seed Optional random seed.
@@ -230,6 +229,8 @@ pooledResidualVariance <- function(M_X, M_Y) {
 #' }
 #'
 #' @export
+#'
+#' @importFrom stats as.formula coef dgamma dlnorm gaussian glm lm median plogis predict quantile rbeta rbinom rcauchy residuals rgamma rlnorm rnorm runif sd var vcov
 
 spike_normal_mcmc = function(X, Y, standardize = T, p0 = 0.5, v02 = NULL, nburn = 4000, npost = 4000, seed = NULL, verbose = T, printevery = 1000, chain_index = 1){
   if(!is.null(seed))

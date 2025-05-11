@@ -135,6 +135,8 @@ pooledResidualVariance <- function(M_X, M_Y) {
 #' }
 #'
 #' @export
+#'
+#' @importFrom stats as.formula coef dgamma dlnorm gaussian glm lm median plogis predict quantile rbeta rbinom rcauchy residuals rgamma rlnorm rnorm runif sd var vcov
 
 horseshoe_mcmc = function(X, Y, standardize = T, nburn = 4000, npost = 4000, seed = NULL, verbose = T, printevery = 1000, chain_index = 1){
   if(!is.null(seed))

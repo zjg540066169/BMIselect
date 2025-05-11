@@ -105,6 +105,9 @@ pooledResidualVariance <- function(M_X, M_Y) {
 #'   \item{s}{Numeric scalar; scale hyperparameter used for the global shrinkage prior.}
 #' }
 #' @export
+#'
+#' @importFrom stats as.formula coef dgamma dlnorm gaussian glm lm median plogis predict quantile rbeta rbinom rcauchy residuals rgamma rlnorm rnorm runif sd var vcov
+#'
 multi_laplace_mcmc = function(X, Y, h = 2, s = NULL, nburn = 4000, npost = 4000, seed = NULL, verbose = TRUE, printevery = 1000, chain_index = 1) {
   if (!is.null(seed)) set.seed(seed)
 
