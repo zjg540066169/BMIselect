@@ -7,8 +7,9 @@
 multi_laplace_mcmc(
   X,
   Y,
+  intercept = TRUE,
   h = 2,
-  s = NULL,
+  v = NULL,
   nburn = 4000,
   npost = 4000,
   seed = NULL,
@@ -18,44 +19,54 @@ multi_laplace_mcmc(
 )
 }
 \arguments{
-\item{X}{A 3D array of predictors with dimensions \code{D x n x p}.}
+\item{X}{A 3-D array of predictors with dimensions \code{D × n × p}.}
 
-\item{Y}{A matrix of outcomes with dimensions \code{D x n}.}
+\item{Y}{A matrix of outcomes with dimensions \code{D × n}.}
 
-\item{h}{Shape parameter for global shrinkage prior. Default: \code{2}.}
+\item{intercept}{Logical; include an intercept? Default \code{TRUE}.}
 
-\item{s}{Scale parameter for global shrinkage prior. Default: \code{(D+1)/D}.}
+\item{h}{Numeric; shape parameter of the Gamma prior on \code{rho}. Default \code{2}.}
 
-\item{nburn}{Number of burn-in iterations. Default: \code{4000}.}
+\item{v}{Numeric or \code{NULL}; scale parameter of the Gamma prior on \code{rho}.
+If \code{NULL}, defaults to \code{(D+1)/(D*(h-1))}.}
 
-\item{npost}{Number of posterior samples to store. Default: \code{4000}.}
+\item{nburn}{Integer; number of burn-in iterations. Default \code{4000}.}
 
-\item{seed}{Optional random seed.}
+\item{npost}{Integer; number of post-burn-in samples to store. Default \code{4000}.}
 
-\item{verbose}{Logical; whether to print progress. Default: \code{TRUE}.}
+\item{seed}{Integer or \code{NULL}; random seed for reproducibility. Default \code{NULL}.}
 
-\item{printevery}{Integer; how often to print progress. Default: \code{1000}.}
+\item{verbose}{Logical; print progress messages? Default \code{TRUE}.}
 
-\item{chain_index}{Integer; index of the current MCMC chain (used for printing).}
+\item{printevery}{Integer; print progress every this many iterations. Default \code{1000}.}
+
+\item{chain_index}{Integer; index of this MCMC chain (for messages). Default \code{1}.}
 }
 \value{
-A list containing posterior draws of:
+A named \code{list} with elements:
 \describe{
-\item{post_beta}{\code{npost x D x p} array of regression coefficients.}
-\item{post_alpha}{\code{npost x D} matrix of intercepts.}
-\item{post_sigma2}{\code{npost} vector of residual variances.}
-\item{post_lambda2}{\code{npost x p} matrix of local shrinkage parameters for each predictor.}
-\item{post_rho}{\code{npost} vector of global shrinkage parameters.}
-\item{post_fitted_Y}{\code{npost x D x n} array of posterior predictive means (with noise).}
-\item{post_pool_beta}{\code{(npost * D) x p} matrix; reshaped from \code{post_beta} for pooling.}
-\item{post_pool_fitted_Y}{\code{(npost * D) x n} matrix; reshaped from \code{post_fitted_Y} for pooling.}
-\item{h}{Numeric scalar; shape hyperparameter used for the global shrinkage prior.}
-\item{s}{Numeric scalar; scale hyperparameter used for the global shrinkage prior.}
+\item{\code{post_beta}}{Array \code{npost × D × p} of sampled regression coefficients.}
+\item{\code{post_alpha}}{Matrix \code{npost × D} of sampled intercepts (if used).}
+\item{\code{post_sigma2}}{Numeric vector of length \code{npost}, sampled residual variances.}
+\item{\code{post_lambda2}}{Matrix \code{npost × p} of sampled local shrinkage parameters.}
+\item{\code{post_rho}}{Numeric vector of length \code{npost}, sampled global parameters.}
+\item{\code{post_fitted_Y}}{Array \code{npost × D × n} of posterior predictive draws (with noise).}
+\item{\code{post_pool_beta}}{Matrix \code{(npost * D) × p} of pooled coefficient draws.}
+\item{\code{post_pool_fitted_Y}}{Matrix \code{(npost * D) × n} of pooled predictive draws (with noise).}
+\item{\code{hat_matrix_proj}}{Matrix \code{D × n × n} of averaged projection hat-matrices. To avoid recalculate for estimating degree of freedom.}
+\item{\code{h}, \code{v}}{Numeric; the shape and scale hyperparameters used.}
 }
 }
 \description{
-Implements Bayesian variable selection using the Multi_Laplace prior
-across multiply-imputed datasets. This prior induces group-wise shrinkage
-on regression coefficients by sharing local shrinkage (lambda) across datasets
-and placing a gamma hyperprior on the global shrinkage (rho).
+Implements Bayesian variable selection under the Multi-Laplace prior on
+regression coefficients across multiply-imputed datasets.  The prior shares
+local shrinkage parameters (\code{lambda2}) across imputations and places
+a Gamma(\code{h}, \code{v}) hyperprior on the global parameter \code{rho}.
+}
+\examples{
+sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5, low_missing = TRUE,
+n_imp = 5, seed = 123)
+X <- sim$data_MI$X
+Y <- sim$data_MI$Y
+fit <- multi_laplace_mcmc(X, Y, intercept = TRUE, nburn = 100, npost = 100)
 }

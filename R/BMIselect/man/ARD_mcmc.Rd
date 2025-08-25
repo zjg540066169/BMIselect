@@ -7,48 +7,56 @@
 ARD_mcmc(
   X,
   Y,
-  standardize = F,
+  intercept = TRUE,
   nburn = 4000,
   npost = 4000,
   seed = NULL,
-  verbose = T,
+  verbose = TRUE,
   printevery = 1000,
   chain_index = 1
 )
 }
 \arguments{
-\item{X}{A 3D array of predictors with dimensions \code{D x n x p}.}
+\item{X}{A 3-D array of predictors with dimensions \code{D × n × p}.}
 
-\item{Y}{A matrix of outcomes with dimensions \code{D x n}.}
+\item{Y}{A matrix of outcomes with dimensions \code{D × n}.}
 
-\item{standardize}{Logical; whether to standardize \code{X} within each dataset. Default: \code{FALSE}.}
+\item{intercept}{Logical; include an intercept? Default \code{TRUE}.}
 
-\item{nburn}{Number of burn-in iterations. Default: \code{4000}.}
+\item{nburn}{Integer; number of burn-in MCMC iterations. Default \code{4000}.}
 
-\item{npost}{Number of posterior samples to store. Default: \code{4000}.}
+\item{npost}{Integer; number of post-burn-in samples to retain. Default \code{4000}.}
 
-\item{seed}{Optional random seed.}
+\item{seed}{Integer or \code{NULL}; random seed for reproducibility. Default \code{NULL}.}
 
-\item{verbose}{Logical; whether to print MCMC progress. Default: \code{TRUE}.}
+\item{verbose}{Logical; print progress messages? Default \code{TRUE}.}
 
-\item{printevery}{Print progress every \code{printevery} iterations. Default: \code{1000}.}
+\item{printevery}{Integer; print progress every this many iterations. Default \code{1000}.}
 
-\item{chain_index}{Integer; index of the current MCMC chain (used for printing). Default: \code{1}.}
+\item{chain_index}{Integer; index of this MCMC chain (for labeling messages). Default \code{1}.}
 }
 \value{
-A list containing posterior draws of:
+A named \code{list} with components:
 \describe{
-\item{post_beta}{\code{npost x D x p} array of regression coefficients.}
-\item{post_alpha}{\code{npost x D} matrix of intercepts.}
-\item{post_sigma2}{\code{npost} vector of residual variances.}
-\item{post_psi2}{\code{npost x p} matrix of precision parameters for each coefficient.}
-\item{post_fitted_Y}{\code{npost x D x n} array of posterior predictive means (with noise).}
-\item{post_pool_beta}{\code{(npost * D) x p} matrix; reshaped \code{post_beta} for pooling.}
-\item{post_pool_fitted_Y}{\code{(npost * D) x n} matrix; reshaped \code{post_fitted_Y} for pooling.}
+\item{\code{post_beta}}{Array \code{npost × D × p} of sampled regression coefficients.}
+\item{\code{post_alpha}}{Matrix \code{npost × D} of sampled intercepts (if used).}
+\item{\code{post_sigma2}}{Numeric vector length \code{npost}, sampled residual variances.}
+\item{\code{post_psi2}}{Matrix \code{npost × p} of sampled precision parameters for each coefficient.}
+\item{\code{post_fitted_Y}}{Array \code{npost × D × n} of posterior predictive draws (with noise).}
+\item{\code{post_pool_beta}}{Matrix \code{(npost * D) × p} of pooled coefficient draws.}
+\item{\code{post_pool_fitted_Y}}{Matrix \code{(npost * D) × n} of pooled predictive draws (with noise).}
+\item{\code{hat_matrix_proj}}{Matrix \code{D × n × n} of averaged projection hat-matrices. To avoid recalculate for estimating degree of freedom.}
 }
 }
 \description{
 Implements Bayesian variable selection using the Automatic Relevance Determination (ARD) prior
 across multiply-imputed datasets. The ARD prior imposes feature-specific shrinkage by placing
-a Gamma prior on the inverse variance (precision) of each coefficient.
+a prior proportional to inverse of precision of each coefficient.
+}
+\examples{
+sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5,
+low_missing = TRUE, n_imp = 5, seed = 123)
+X <- sim$data_MI$X
+Y <- sim$data_MI$Y
+fit <- ARD_mcmc(X, Y, nburn = 100, npost = 100)
 }
