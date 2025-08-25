@@ -1,18 +1,21 @@
 Package: BMIselect
 Title: Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Datasets
-Version: 0.1.0
+Version: 1.0.4
+Author: Jungang Zou [aut, cre],
+  Sijian Wang [aut],
+  Qixuan Chen [aut]
 Authors@R: 
-    c(
-      person("Jungang", "Zou", email = "jungang.zou@gmail.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-5221-1489")),
-      person("Sijian", "Wang", role = "aut"),
-      person("Qixuan", "Chen", email = "qc2138@cumc.columbia.edu", role = "aut")
-    )
-Description: Implements five Bayesian MI-LASSO models for variable selection on 
-  multiply-imputed datasets, using shrinkage priors (Multi_Laplace, Horseshoe, ARD) 
-  and spike-and-slab priors (Spike_Normal, Spike_Laplace). Provides tools for MCMC-based 
-  model fitting, posterior-based variable selection, and hyperparameter tuning. Methods 
-  support continuous outcomes only.
+    c(person("Jungang", "Zou", email = "jungang.zou@gmail.com", role = c("aut", "cre")),
+    person(given = "Sijian",
+             family = "Wang",
+             role = c("aut")
+             ),
+    person(given = "Qixuan",
+             family = "Chen",
+             role = c("aut")
+             ))
+Maintainer: Jungang Zou <jungang.zou@gmail.com>
+Description: Provides a suite of Bayesian MI-LASSO for variable selection methods for multiply-imputed datasets. The package includes four Bayesian MI-LASSO models using shrinkage (Multi-Laplace, Horseshoe, ARD) and Spike-and-Slab (Spike-and-Laplace) priors, along with tools for model fitting via MCMC, four-step projection predictive variable selection, and hyperparameter calibration. Methods are suitable for both continuous and binary covariates under missing-at-random or missing-completely-at-random assumptions. See Zou, J., Wang, S. and Chen, Q. (2025), Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Data. ArXiv, 2211.00114. <doi:10.48550/arXiv.2211.00114> for more details. We also provide the frequentist`s MI-LASSO function.
 License: Apache License (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -29,9 +32,13 @@ Imports:
     foreach,
     doParallel,
     arm,
-    coda
+    mice,
+    abind,
+    stringr,
+    stats,
+    posterior
 Suggests: 
     testthat,
     knitr,
     rmarkdown
-
+VignetteBuilder: knitr
