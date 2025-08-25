@@ -1,0 +1,211 @@
+---
+title: "An Introduction to BMIselect"
+author: "Jungang Zou"
+date: "`r Sys.Date()`"
+email: jungang.zou@gmail.com
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An Introduction to BMIselect}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+The R package BMIselect (Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Datasets) provides a suite of Bayesian MI-LASSO for variable selection methods for multiply-imputed datasets. The package includes four Bayesian MI-LASSO models using shrinkage (Multi-Laplace, Horseshoe, ARD) and Spike-and-Slab (Spike-and-Laplace) priors, along with tools for model fitting via MCMC, four-step projection predictive variable selection, and hyperparameter calibration. Methods are suitable for continuous outcomes and both continuous and binary covariates under missing-at-random or missing-completely-at-random assumptions. See Zou, J., Wang, S. and Chen, Q. (2025), Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Data. ArXiv, 2211.00114. <doi:10.48550/arXiv.2211.00114> for more details.
+
+This vignette introduces the workflow of the package, including simulating a multiply-imputed dataset, running variable selection methods and reporting the post-selection inference.
+```{r setup}
+library(BMIselect)
+seed = 12345
+set.seed(seed)
+```
+
+## Data Preparation
+The functions of `sim_A()`, `sim_B()`, `sim_C()` are used to generate data based on the simulation section in the original paper. Here we use `sim_A()` to simulate a dataset of $n=200$ samples with $p=20$ covariates. The $p=20$ covariates are independent standard normals. Among them, the $1,2,5,11,12,15$-th covariates are used to build outcome model, with coefficients are all ones. Missingness are generated based on MAR assumption. Multiple imputation is based on MICE. We generate five imputed sets.
+
+
+The object from `sim_A()` is a list, containing the originally generated dataset `data_O`, the dataset imposed with missing values `data_mis`, the data with only complete cases `data_CC`, the five imputed dataset `data_MI`, the vector `important` to indicate if covariate is related to outcome or not, the covariance matrix `covmat` to generate covariates matrix, and the coefficients vector `beta`.
+
+
+```{r sim_b}
+# Simulate data
+data <- sim_A(
+  n = 100,
+  p = 20,
+  type = "MAR",
+  seed = seed,
+  n_imp = 5
+)
+
+str(data, max.level = 1)
+```
+
+In this vignette, we focus on variable selection on the multiply-imputed set `data_MI`. The dataset contains a three-dimensional multiply-imputed covariates `data_MI$X` and a two-dimensional outcome matrix `data_MI$Y`. The dimensions of `data_MI$X` is $(D, n, p)$, where $D$ is the number of imputations. Similarly, the dimension of `data_MI$Y` is $(D, n)$.
+
+
+```{r mi}
+str(data$data_MI)
+```
+
+
+## Variable Selection Using Bayesian MI-LASSO
+
+Our `BMI_LASSO()` function performs Bayesian variable selection using a two-stage process. The function `BMI_LASSO()` automatically perform these two-stage algorithm and report the post-selection inference.
+
+In the first stage, we use Markov Chain Monte Carlo (MCMC) to fit a Bayesian group LASSO model. You can choose from the following prior types:
+
+- `"Multi_Laplace"`
+- `"Horseshoe"`
+- `"ARD"` (Automatic Relevance Determination)
+- `"Spike_Laplace"`
+
+The first three priors are called shrinkage priors, which gently push the coefficient estimates toward zero without setting them exactly to zero (similar to ridge regression). In contrast, the Spike-and-Laplace model uses a spike-and-slab prior, which combines the coefficients with hidden on/off switches to more explicitly decide whether a variable should be included or not. However, variable selection is an issue for these four priors: shrinkage models get non-zero coefficients estimates for all variables, and Spike-and-Slab prior may select different variable sets (different on/off switches) across MCMC draws. Also, the post-selection estimation is also a classical issue for variable selection. This motivates us to propose the method in the second stage.
+
+
+In the second stage, we apply a four-step projection predictive variable selection method to address the limitations above:
+
+1. Generate candidate variable subsets using different thresholds between 0 and 1 (specified by the parameter `grid`). The thresholds will be used by a scaled-neighborhood criterion (see more details in the paper). A candidate set excludes all variables when the threshold is 0, and keeping all variables when the threshold is 1.
+2. Fit submodels using each candidate subset. Each submodel attempts to approximate the full model as closely as possible.
+3. Evaluate each submodel using the Bayesian Information Criterion (BIC). Select the optimal submodel based on the smallest BIC value.
+4. Report the post-selection estimates from the optimal submodel.
+
+
+See Zou, J., Wang, S. and Chen, Q. (2025), Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Data. ArXiv, 2211.00114. <doi:10.48550/arXiv.2211.00114> for more details.
+
+### Example of Horseshoe model
+
+Here is an example using `"Horseshoe"` model. We specify 4000 iterations for both burn-in period and sampling period.
+```{r Horseshoe}
+bmilasso <- BMI_LASSO(data$data_MI$X, data$data_MI$Y, model = "Horseshoe",
+                 nburn = 4000, npost = 4000, output_verbose = TRUE, seed = seed)
+
+str(bmilasso, max.level = 1)
+```
+
+
+The returned object is a list, containing posterior draws, selected model, BIC for all submodels, and some summary tables. We first take a look at the three important objects: `best_select`, `posterior_best_models`, and `summary_table_selected`:
+
+- `best_select`: a logical vector to indicate the selection from the optimal (sub)model. Its rowname is the corresponding threshold.
+- `posterior_best_models`: posterior draws of coefficients (beta), intercept (alpha) and regression variance (sigma2) for the optimal (sub)model. We also include the pooled posterior draws of coefficients and intercept across imputations. If the parameter `standardize` of `BMI_LASSO()` is `TRUE`, our function will normalize each covariate and centralize outcomes within each imputed set. The model will exclude the intercept when fitting. Then `posterior_best_models` contains the posterior draws of estimates on both normalized scales and original scales.
+- `summary_table_selected`: a summary table to summarize the posterior estimates for the optimal (sub)model. If the parameter `standardize` of `BMI_LASSO()` is `TRUE`, we report the estimates on original scales.
+
+
+```{r}
+# selection vector of optimal (sub)model
+bmilasso$best_select
+
+
+# posterior draws of coefficients, intercept and regression variance for the optimal (sub)model
+str(bmilasso$posterior_best_models)
+
+
+# the summary table of post-selection inference
+bmilasso$summary_table_selected
+```
+
+
+If some researchers are interested in the collections of candidate submodels and their selection vectors/BIC, the objects `select` and `bic_models` contain the information:
+
+- `select`: a logical matrix. Each row is a selection vector, whose rowname indicates its threshold. We only keep unique selection rows.
+- `bic_models`: a matrix containing the BICs and degrees of freedom. Each column is a submodel.
+```{r}
+# selection matrix of all (sub)models
+bmilasso$select
+
+
+# BICs and degrees of freedom
+bmilasso$bic_models
+```
+
+
+In some cases, if users want to test the robustness of each prior, the Bayesian group LASSO model fitted from the first stage (before the projection predictive variable selection procedure) is needed. Users can access this information from objects `posterior` and `summary_table_full`. Additionally, the posterior draws of some hierarchical parameters are also included in `posterior`.
+```{r}
+# posterior draws of parameters of fitted full model in the first stage (before projection predictive variable selection procedure)
+str(bmilasso$posterior)
+
+
+# the summary table of coefficients, intercept, and regression variance from the fitted full model
+bmilasso$summary_table_full
+```
+
+### Hyperparameters Specification
+In Bayesian MI-LASSO models, `"Multi_Laplace"` and `"Spike_Laplace"` priors have two hyperparameters, respectively:
+
+- `"Multi_Laplace"`: `h` (shape) and `v` (scale) of Gamma hyperprior. `h` > 1, and `v` > 0. Default: `h` = 2 and `v` = (D+1)/(D * (h - 1)).
+- `"Spike_Laplace"`: `a` (shape) and `b` (scale) of Gamma hyperprior. `a` > 1, and `b` > 0. Default: `a` = 2 and `b` = (D+1)/(2D * (a - 1)).
+
+Users can specify the hyperparameters in `BMI_LASSO()`:
+```{r}
+# specify hyperparameters for Multi-Laplace model
+bmilasso_ML <- BMI_LASSO(data$data_MI$X, data$data_MI$Y, model = "Multi_Laplace",
+                 nburn = 4000, npost = 4000, seed = seed, h = 10, v = 0.5)
+
+
+# specify hyperparameters for Spike-Laplace model. To save time, we give an example without running
+# bmilasso_SL <- BMI_LASSO(data$data_MI$X, data$data_MI$Y, model = "Spike_Laplace",
+#                  nburn = 4000, npost = 4000, seed = seed, a = 10, b = 1)
+```
+
+
+
+Since `"Horseshoe"` and `"ARD"` priors do not require any hyperparameter tuning, we recommend users start with these two options for simplicity and stability. For `"Multi_Laplace"` and `"Spike_Laplace"`, we did a sensitivity analysis for these hyperparameters in our paper. Based on the results, we suggest avoiding very small values of `v` and `b`, as they may lead to unstable model fitting and variable selection. In practice, we recommend beginning with the default values provided in the function.
+
+
+
+### Parallel Computing for Multiple Chains
+If multiple cores are available, parallel computing can be used for multiple chains. This function is based on the R packages `doParallel` and `foreach`. Users can specify the parameter `ncores` for the number of cores when running multiple chains `nchain`.
+```{r}
+# run 2 chains using 2 cores in series
+start = Sys.time()
+bmilasso_series <- BMI_LASSO(data$data_MI$X, data$data_MI$Y, model = "Horseshoe",
+                 nburn = 4000, npost = 4000, output_verbose = FALSE, nchains = 2, seed = seed)
+end = Sys.time()
+print(paste("The running time for two chains in series:", difftime(end, start, units = "mins"), "mins"))
+
+
+# run 2 chains using 2 cores in parallel
+start = Sys.time()
+bmilasso_parallel <- BMI_LASSO(data$data_MI$X, data$data_MI$Y, model = "Horseshoe",
+                 nburn = 4000, npost = 4000, output_verbose = FALSE, nchains = 2, ncores = 2, seed = seed)
+end = Sys.time()
+print(paste("The running time for two chains in parallel:", difftime(end, start, units = "mins"), "mins"))
+```
+
+The returned results from multiple chains are different from those of a single chain. The summary tables `summary_table_selected` and `summary_table_full` are calculated by pooling posterior draws from multiple chains. For all other output objects, results from each chain are listed separately, one by one, so users can obtain and compare the posterior estimates of each chain individually.
+
+```{r}
+# the posterior draws of optimal submodels of two chains
+str(bmilasso_parallel$posterior_best_models)
+
+# summary table by pooling two chains
+bmilasso_parallel$summary_table_selected
+```
+
+
+## Frequentists MI-LASSO
+Although Bayesian MI-LASSO models have better performance than MI-LASSO, some users may be interested in frequentists method. We also include the MI-LASSO method in the function `MI_LASSO()`, originally from [https://www.columbia.edu/~qc2138/Downloads/software/MI-lasso.R](https://www.columbia.edu/~qc2138/Downloads/software/MI-lasso.R). We further add a parameter `ncores` to allow parallel computing. We give a brief example and more details can be found in Chen, Q. and Wang, S. (2013). “Variable selection for multiply-imputed data with application to dioxin exposure study.” Statistics in Medicine, 32(21): 3646–3659.
+```{r}
+# fit MI-LASSO
+milasso = MI_LASSO(data$data_MI$X, data$data_MI$Y, ncores = 2)
+
+str(milasso)
+```
+
+
+## Discussion 
+Here are some discussions about this package:
+
+1. Currently, our package only supports continuous outcomes. Binary, categorical and ordinal outcomes are our research topic in the future.
+2. We support continuous and binary covariates. Selection for categorical covariates is tricky. Generally we transform a categorical variable into a set of binary dummy variables. Our package supports the selection on each dummy variable. For selection of the whole group, we will research it in the future.
+3. Similarly to other variable selection methods, our models are sensitive to multicollinearity. If some covariates are highly correlated, we suggest to do some pre-processing before using our methods. 
+
+
+## Disclaimer
+If you find any bug in this package, please contact me: jungang.zou@gmail.com.
