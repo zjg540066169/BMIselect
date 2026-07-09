@@ -66,12 +66,12 @@ if (getRversion() >= "2.15.1") {
 #' @param output_verbose Logical; print progress messages. Default \code{TRUE}.
 #' @param printevery Integer; print status every so many iterations. Default \code{1000}.
 #' @param selection_set Optional fixed selection set that bypasses the four-step
-#'   search. Either a logical vector of length \code{p} or a vector of covariate
-#'   indices. When supplied, scaled-neighborhood candidate generation and BIC
-#'   selection are skipped and the fitted posterior is projected directly onto
-#'   this set (\code{best_select} equals the supplied set and \code{bic_models}
-#'   is \code{NULL}). Useful for post-selection inference under a fixed model,
-#'   e.g. the true active set in simulations. Default \code{NULL}.
+#'   search. A logical vector of length \code{p} (\code{TRUE} for the covariates
+#'   to include). When supplied, scaled-neighborhood candidate generation and
+#'   BIC selection are skipped and the fitted posterior is projected directly
+#'   onto this set (\code{best_select} equals the supplied set and
+#'   \code{bic_models} is \code{NULL}). Useful for post-selection inference under
+#'   a fixed model, e.g. the true active set in simulations. Default \code{NULL}.
 #' @param \dots Additional model-specific hyperparameters:
 #'   - For \code{"Multi_Laplace"}: \code{h} (shape) and \code{v} (scale) of Gamma hyperprior.
 #'   - For \code{"Spike_Laplace"}: \code{a} (shape) and \code{b} (scale) of Gamma hyperprior.
@@ -91,6 +91,7 @@ if (getRversion() >= "2.15.1") {
 #'     split-Rhat and other diagnostics for the full model.}
 #'   \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
 #'     for the selected submodel after projection.}
+#'   \item{\code{running_time}}{Numeric; total fitting time in minutes.}
 #' }
 #'
 #' @examples
@@ -129,22 +130,15 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   # -------------------------------
   # 3a. Optional user-specified selection set. When supplied, the four-step
   #     search (scaled-neighborhood candidates + BIC) is skipped and the fitted
-  #     posterior is projected directly onto this set. Accepts either a logical
-  #     vector of length p or a vector of covariate indices. Useful for
+  #     posterior is projected directly onto this set. Must be a logical vector
+  #     of length p (TRUE for the covariates to include). Useful for
   #     post-selection inference under a fixed (e.g. the true) model.
   # -------------------------------
   sel_fixed <- NULL
   if (!is.null(selection_set)) {
-    if (is.logical(selection_set)) {
-      if (length(selection_set) != p)
-        stop(sprintf("'selection_set' as a logical vector must have length p = %d.", p))
-      sel_fixed <- selection_set
-    } else {
-      selection_set <- as.integer(selection_set)
-      if (length(selection_set) > 0L && (min(selection_set) < 1L || max(selection_set) > p))
-        stop(sprintf("'selection_set' indices must lie in 1..p = %d.", p))
-      sel_fixed <- logical(p); sel_fixed[selection_set] <- TRUE
-    }
+    if (!is.logical(selection_set) || length(selection_set) != p)
+      stop(sprintf("'selection_set' must be a logical vector of length p = %d (TRUE for the covariates to include).", p))
+    sel_fixed <- selection_set
   }
 
   # -------------------------------
@@ -614,13 +608,13 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   # 18. Report timing
   # -------------------------------
   end <- Sys.time()
+  running_time <- as.numeric(difftime(end, start, units = "mins"))
   if (output_verbose) {
     cat(sprintf("Running time for %d %s: %.2f minutes\n",
-                nchains, ifelse(nchains > 1, "chains", "chain"),
-                as.numeric(difftime(end, start, units = "mins"))))
+                nchains, ifelse(nchains > 1, "chains", "chain"), running_time))
   }
 
-  return(list(posterior = model_chains, select = select, best_select = best_select, posterior_best_models = posterior_best_models, bic_models = bic_models, summary_table_full = summary_table_full, summary_table_selected = summary_table_select))
+  return(list(posterior = model_chains, select = select, best_select = best_select, posterior_best_models = posterior_best_models, bic_models = bic_models, summary_table_full = summary_table_full, summary_table_selected = summary_table_select, running_time = running_time))
 }
 
 

@@ -62,12 +62,12 @@ degrees‐of‐freedom estimations.  Default \code{FALSE}.}
 \item{printevery}{Integer; print status every so many iterations. Default \code{1000}.}
 
 \item{selection_set}{Optional fixed selection set that bypasses the four-step
-search. Either a logical vector of length \code{p} or a vector of covariate
-indices. When supplied, scaled-neighborhood candidate generation and BIC
-selection are skipped and the fitted posterior is projected directly onto this
-set (\code{best_select} equals the supplied set and \code{bic_models} is
-\code{NULL}). Useful for post-selection inference under a fixed model, e.g. the
-true active set in simulations. Default \code{NULL}.}
+search. A logical vector of length \code{p} (\code{TRUE} for the covariates
+to include). When supplied, scaled-neighborhood candidate generation and
+BIC selection are skipped and the fitted posterior is projected directly
+onto this set (\code{best_select} equals the supplied set and
+\code{bic_models} is \code{NULL}). Useful for post-selection inference under
+a fixed model, e.g. the true active set in simulations. Default \code{NULL}.}
 
 \item{\dots}{Additional model-specific hyperparameters:
 \itemize{
@@ -91,6 +91,7 @@ degrees-of-freedom for each candidate submodel.}
 split-Rhat and other diagnostics for the full model.}
 \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
 for the selected submodel after projection.}
+\item{\code{running_time}}{Numeric; total fitting time in minutes.}
 }
 }
 \description{
