@@ -65,6 +65,13 @@ if (getRversion() >= "2.15.1") {
 #' @param ncores Integer; number of parallel cores to use. Default \code{1}.
 #' @param output_verbose Logical; print progress messages. Default \code{TRUE}.
 #' @param printevery Integer; print status every so many iterations. Default \code{1000}.
+#' @param selection_set Optional fixed selection set that bypasses the four-step
+#'   search. Either a logical vector of length \code{p} or a vector of covariate
+#'   indices. When supplied, scaled-neighborhood candidate generation and BIC
+#'   selection are skipped and the fitted posterior is projected directly onto
+#'   this set (\code{best_select} equals the supplied set and \code{bic_models}
+#'   is \code{NULL}). Useful for post-selection inference under a fixed model,
+#'   e.g. the true active set in simulations. Default \code{NULL}.
 #' @param \dots Additional model-specific hyperparameters:
 #'   - For \code{"Multi_Laplace"}: \code{h} (shape) and \code{v} (scale) of Gamma hyperprior.
 #'   - For \code{"Spike_Laplace"}: \code{a} (shape) and \code{b} (scale) of Gamma hyperprior.
@@ -95,7 +102,7 @@ if (getRversion() >= "2.15.1") {
 #'                  nchains = 1, ncores = 1)
 #' str(fit$best_select)
 #' @export
-BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 1, 0.01), orthogonal = FALSE, nburn = 4000, npost = 4000, seed = NULL, nchains = 1, ncores = 1, output_verbose = TRUE, printevery = 1000, ...){
+BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 1, 0.01), orthogonal = FALSE, nburn = 4000, npost = 4000, seed = NULL, nchains = 1, ncores = 1, output_verbose = TRUE, printevery = 1000, selection_set = NULL, ...){
   # -------------------------------
   # 1. Validate input model
   # -------------------------------
@@ -118,6 +125,27 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   D = dim(X)[1]
   n = dim(X)[2]
   p = dim(X)[3]
+
+  # -------------------------------
+  # 3a. Optional user-specified selection set. When supplied, the four-step
+  #     search (scaled-neighborhood candidates + BIC) is skipped and the fitted
+  #     posterior is projected directly onto this set. Accepts either a logical
+  #     vector of length p or a vector of covariate indices. Useful for
+  #     post-selection inference under a fixed (e.g. the true) model.
+  # -------------------------------
+  sel_fixed <- NULL
+  if (!is.null(selection_set)) {
+    if (is.logical(selection_set)) {
+      if (length(selection_set) != p)
+        stop(sprintf("'selection_set' as a logical vector must have length p = %d.", p))
+      sel_fixed <- selection_set
+    } else {
+      selection_set <- as.integer(selection_set)
+      if (length(selection_set) > 0L && (min(selection_set) < 1L || max(selection_set) > p))
+        stop(sprintf("'selection_set' indices must lie in 1..p = %d.", p))
+      sel_fixed <- logical(p); sel_fixed[selection_set] <- TRUE
+    }
+  }
 
   # -------------------------------
   # 3. Reshape Y to D x n if needed
@@ -239,6 +267,13 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   # - For Spike_Laplace: use posterior median threshold
   # -------------------------------
 
+  if (!is.null(sel_fixed)) {
+    # user-specified selection set: skip candidate generation + BIC and project
+    # the fitted posterior directly onto this fixed set.
+    select      <- lapply(model_chains, function(ch) matrix(sel_fixed, nrow = 1, dimnames = list("selection_set", NULL)))
+    bic_models  <- lapply(model_chains, function(ch) NULL)
+    best_select <- lapply(model_chains, function(ch) matrix(sel_fixed, nrow = 1, dimnames = list("selection_set", NULL)))
+  } else {
   if(SNC){
     select = lapply(model_chains, function(c) {
       SNC = apply(c$post_pool_beta, 2, function(x) mean(abs(x) <= sqrt(stats::var(x))))
@@ -399,6 +434,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   best_select <- sapply(seq_along(bic_models), function(i) {
     select[[i]][which.min(bic_models[[i]][1,]), , drop = FALSE]
   }, simplify = FALSE)
+  }
 
   # -------------------------------
   # 13. Project on the selected posterior distribution
