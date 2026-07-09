@@ -18,7 +18,7 @@ The MCMC samplers are implemented in C++ (via `Rcpp`/`RcppArmadillo`) for speed.
 
 ## Installation
 
-From CRAN (once available):
+From CRAN:
 
 ```r
 install.packages("BMIselect")
