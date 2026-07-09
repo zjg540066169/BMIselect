@@ -1,0 +1,25 @@
+# generated vignette output (built by R CMD build)
+inst/doc
+
+# R / C++ build artifacts
+*.o
+*.so
+*.dll
+
+# RStudio / R session
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# R CMD check output
+*.Rcheck/
+
+# dev-only (kept locally, not published)
+crosscheck/
+
+# archives / backups
+*.tar.gz
+
+# macOS
+.DS_Store

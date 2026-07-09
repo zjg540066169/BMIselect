@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^cran-comments\.md$
+^crosscheck$
+^\.Rhistory$
+^LICENSE$
+^README\.md$
+^\.git$
+^\.gitignore$
