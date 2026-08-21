@@ -207,8 +207,8 @@ pooled_coefficients <- function(select, X, Y, intercept = TRUE) {
 # pooled_covariance: returns the pooled covariance matrix using Rubin’s rules.
 pooled_covariance <- function(select, X, Y, intercept = TRUE) {
   m <- dim(X)[1]
-  cov_list <- vector("list", m)
-  beta_outer <- vector("list", m)
+  cov_list  <- vector("list", m)
+  beta_list <- vector("list", m)
 
   for (i in 1:m) {
     X_i <- X[i, , ]
@@ -221,13 +221,17 @@ pooled_covariance <- function(select, X, Y, intercept = TRUE) {
       models <- lm(Y[i, ] ~ - 1 + X_i)
     }
 
-    cov_list[[i]] <- vcov(models)
-    beta_i <- coef(models)
-    beta_outer[[i]] <- beta_i %o% beta_i  # outer product
+    cov_list[[i]]  <- vcov(models)
+    beta_list[[i]] <- coef(models)
   }
 
-  within <- Reduce("+", cov_list) / m
-  between <- Reduce("+", beta_outer) / (m - 1)
+  # Rubin's rules: within = average within-imputation covariance; between =
+  # sample covariance of the per-imputation point estimates, which MUST be
+  # centred on the pooled mean beta_bar (using the uncentred second moment
+  # sum(beta_i %o% beta_i) inflates the between term by ~ beta_bar %o% beta_bar).
+  within  <- Reduce("+", cov_list) / m
+  betabar <- Reduce("+", beta_list) / m
+  between <- Reduce("+", lapply(beta_list, function(b) (b - betabar) %o% (b - betabar))) / (m - 1)
   pooled_cov <- within + (1 + 1/m) * between
   return(pooled_cov)
 }

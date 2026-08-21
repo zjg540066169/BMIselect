@@ -1,3 +1,38 @@
+# Type-aware multiple imputation shared by sim_A / sim_B / sim_C.
+#
+# Rule (matches the manuscript's stated imputation):
+#   * high-dimensional designs with p >= n  -> CART, the only imputer that stays
+#     well-defined when each variable's imputation regression has p > n;
+#   * otherwise continuous covariates       -> predictive mean matching (5 donors);
+#     binary (0/1) covariates               -> logistic regression.
+# Binary columns are matched to observed 0/1 donors via a 2-level factor and
+# converted back to numeric. Returns the n_imp x n x p array of imputed covariates.
+impute_MI <- function(X_miss, Y, n_imp = 5, donors = 5L) {
+  n <- nrow(X_miss); p <- ncol(X_miss)
+  dat <- as.data.frame(cbind(X_miss, as.numeric(Y)))
+  colnames(dat) <- c(paste0("X", seq_len(p)), "Y")
+  if (p >= n) {
+    method <- "cart"; binary_cols <- integer(0)
+  } else {
+    is_bin <- vapply(seq_len(p), function(j) {
+      u <- unique(dat[[j]][!is.na(dat[[j]])])
+      length(u) <= 2 && all(u %in% c(0, 1))
+    }, logical(1))
+    method <- rep("pmm", p + 1L)          # +1 for the (continuous) response column
+    method[which(is_bin)] <- "logreg"
+    binary_cols <- which(is_bin)
+    for (j in binary_cols) dat[[j]] <- factor(dat[[j]], levels = c(0, 1))
+  }
+  imp <- mice::mice(dat, m = n_imp, method = method, donors = donors, printFlag = FALSE)
+  imp_array <- array(0, dim = c(n_imp, n, p))
+  for (d in seq_len(n_imp)) {
+    ci <- mice::complete(imp, d)
+    for (j in binary_cols) ci[[j]] <- as.numeric(as.character(ci[[j]]))
+    imp_array[d, , ] <- as.matrix(ci[, seq_len(p)])
+  }
+  imp_array
+}
+
 #' Simulate dataset A: Independent continuous covariates with MCAR/MAR missingness
 #'
 #' Generates a dataset for Scenario A used in Bayesian MI-LASSO benchmarking. Covariates are iid standard normal,
@@ -95,13 +130,9 @@ sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n
   X_miss = as.matrix(X)
   X_miss[R == 1] = NA
 
-  # imputation
-  imp <- mice::mice(cbind(X_miss, Y), m = n_imp, method = "pmm", printFlag = FALSE)
-  imp_list <- lapply(1:n_imp, function(i) as.matrix(mice::complete(imp, i)))
-  imp_array <- array(0, dim = c(n_imp, n, p))
-  for (d in 1:n_imp) {
-    imp_array[d,,] = imp_list[[d]][,1:p]
-  }
+  # imputation: type-aware (continuous -> pmm/10 donors; binary -> logreg;
+  # high-dim p >= n -> cart). See impute_MI() at the top of this file.
+  imp_array <- impute_MI(X_miss, Y, n_imp = n_imp)
 
   X_O = list(X = X, Y = Y[,1])
   X_mis = list(X = X_miss, Y = Y[,1])
@@ -114,7 +145,8 @@ sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n
     data_CC = X_CC,
     important = (beta != 0),
     covmat = covmat,
-    beta = beta
+    beta = beta,
+    sigma2 = sigma2
   ))
 }
 
@@ -221,13 +253,9 @@ sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
   X_miss = as.matrix(X)
   X_miss[R == 1] = NA
 
-  # imputation
-  imp <- mice::mice(cbind(X_miss, Y), m = n_imp, method = "pmm", printFlag = FALSE)
-  imp_list <- lapply(1:n_imp, function(i) as.matrix(mice::complete(imp, i)))
-  imp_array <- array(0, dim = c(n_imp, n, p))
-  for (d in 1:n_imp) {
-    imp_array[d,,] = imp_list[[d]][,1:p]
-  }
+  # imputation: type-aware (continuous -> pmm/10 donors; binary -> logreg;
+  # high-dim p >= n -> cart). See impute_MI() at the top of this file.
+  imp_array <- impute_MI(X_miss, Y, n_imp = n_imp)
 
   X_O = list(X = X, Y = Y[,1])
   X_mis = list(X = X_miss, Y = Y[,1])
@@ -240,7 +268,8 @@ sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
     data_CC = X_CC,
     important = (beta != 0),
     covmat = covmat,
-    beta = beta
+    beta = beta,
+    sigma2 = sigma2
   ))
 }
 
@@ -345,13 +374,9 @@ sim_C = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
   X_miss = as.matrix(X)
   X_miss[R == 1] = NA
 
-  # imputation
-  imp <- mice::mice(cbind(X_miss, Y), m = n_imp, defaultMethod = "logreg", printFlag = FALSE)
-  imp_list <- lapply(1:n_imp, function(i) as.matrix(mice::complete(imp, i)))
-  imp_array <- array(0, dim = c(n_imp, n, p))
-  for (d in 1:n_imp) {
-    imp_array[d,,] = imp_list[[d]][,1:p]
-  }
+  # imputation: type-aware (continuous -> pmm/10 donors; binary -> logreg;
+  # high-dim p >= n -> cart). See impute_MI() at the top of this file.
+  imp_array <- impute_MI(X_miss, Y, n_imp = n_imp)
 
   X_O = list(X = X, Y = Y[,1])
   X_mis = list(X = X_miss, Y = Y[,1])
@@ -364,6 +389,7 @@ sim_C = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
     data_CC = X_CC,
     important = (beta != 0),
     covmat = SigmaZ,
-    beta = beta
+    beta = beta,
+    sigma2 = sigma2
   ))
 }

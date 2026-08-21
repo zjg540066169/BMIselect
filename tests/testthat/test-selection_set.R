@@ -21,6 +21,16 @@ test_that("selection_set input is validated before fitting", {
               nburn = 20, npost = 20, seed = 1, output_verbose = FALSE),
     "logical vector of length"
   )
+  # too many variables selected (|s| > n - 2) -> error before fitting.
+  # Synthetic p > n design (D=3, n=15, p=20) so the cap n - 2 = 13 can be exceeded.
+  Xbig <- array(stats::rnorm(3 * 15 * 20), dim = c(3, 15, 20))
+  Ybig <- matrix(stats::rnorm(3 * 15), nrow = 3)
+  toobig <- rep(FALSE, 20); toobig[1:15] <- TRUE      # 15 > n - 2 = 13
+  expect_error(
+    BMI_LASSO(Xbig, Ybig, model = "Multi_Laplace", selection_set = toobig,
+              nburn = 20, npost = 20, seed = 1, output_verbose = FALSE),
+    "at most"
+  )
 })
 
 test_that("selection_set bypasses BIC and matches manual projection", {
@@ -41,18 +51,21 @@ test_that("selection_set bypasses BIC and matches manual projection", {
   expect_setequal(which(as.logical(f$best_select)), which(S))
   expect_null(f$bic_models)
 
-  # the projected posterior equals a manual projection of the SAME posterior
-  # draws onto S -- i.e. selection_set truly routes through projection_posterior.
+  # the PUSHFORWARD (projected) fields equal a manual projection of the SAME
+  # posterior draws onto S -- i.e. selection_set truly routes through
+  # projection_posterior. The plain post_beta/post_sigma2 are the *calibrated*
+  # draws (Scheme C): they carry random deficit noise, so they are checked
+  # structurally (below), not for exact equality.
   manual <- projection_posterior(X, f$posterior$post_beta, f$posterior$post_sigma2,
                                  matrix(S, nrow = 1),
                                  alpha1_arr = f$posterior$post_alpha)
-  expect_equal(f$posterior_best_models$post_beta,   manual$beta2_arr)
-  expect_equal(f$posterior_best_models$post_sigma2, manual$sigma2_opt)
+  expect_equal(f$posterior_best_models$post_beta_projected,   manual$beta2_arr)
+  expect_equal(f$posterior_best_models$post_sigma2_projected, manual$sigma2_opt)
 
   # projected coefficients vanish outside the supplied set.
   pm <- colMeans(f$posterior_best_models$post_pool_beta)
   expect_true(all(which(abs(pm) > 1e-8) %in% which(S)))
 
-  # running_time is returned as a non-negative numeric (minutes).
-  expect_true(is.numeric(f$running_time) && f$running_time >= 0)
+  # runtime is returned as a non-negative numeric vector (minutes).
+  expect_true(is.numeric(f$runtime["total"]) && f$runtime["total"] >= 0)
 })

@@ -1,6 +1,6 @@
 Package: BMIselect
 Title: Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Datasets
-Version: 1.0.4
+Version: 1.0.8
 Authors@R:
     c(person("Jungang", "Zou", email = "jungang.zou@gmail.com", role = c("aut", "cre")),
     person(given = "Sijian",
@@ -31,7 +31,8 @@ Imports:
     abind,
     stringr,
     stats,
-    posterior
+    posterior,
+    loo
 LinkingTo:
     Rcpp,
     RcppArmadillo

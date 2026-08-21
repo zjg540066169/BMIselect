@@ -252,10 +252,15 @@ List cpp_spike_laplace(NumericVector X, NumericMatrix Yr, bool intercept,
       arma::vec res = Yd.row(d).t() - Xbeta.row(d).t() - alpha[d];
       SSE += arma::dot(res, res);
     }
+    // Only the active (Z_j = 1) coefficients carry a sigma2-scaled slab prior
+    // N(0, sigma2 * lambda2_j), so only they contribute D/2 each to the shape.
+    // The spike coefficients are exactly 0 and add nothing: shape is D(n+|Z|)/2,
+    // not D(n+p)/2 (which would count the null dimensions the rate already excludes).
     double SSE_beta = 0.0;
+    int p_active = 0;
     for (int j = 0; j < p; ++j)
-      SSE_beta += beta_mul[j] * (Z[j] == 1 ? 1.0 : 0.0) / lambda2[j];
-    sigma2 = rinvgamma_cpp(D * (n + p) / 2.0, (SSE + SSE_beta) / 2.0);
+      if (Z[j] == 1) { SSE_beta += beta_mul[j] / lambda2[j]; ++p_active; }
+    sigma2 = rinvgamma_cpp(D * (n + p_active) / 2.0, (SSE + SSE_beta) / 2.0);
 
     // Z | . (collapsed, sequential) -- Woodbury collapsed likelihood
     for (int j = 0; j < p; ++j) {

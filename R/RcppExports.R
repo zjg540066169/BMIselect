@@ -13,6 +13,10 @@ cpp_multi_laplace <- function(X, Yr, intercept, h, v, nburn, npost, seed, verbos
     .Call(`_BMIselect_cpp_multi_laplace`, X, Yr, intercept, h, v, nburn, npost, seed, verbose, printevery, chain_index)
 }
 
+cpp_reg_horseshoe <- function(X, Yr, intercept, p0, nu, s, nburn, npost, seed, verbose, printevery, chain_index) {
+    .Call(`_BMIselect_cpp_reg_horseshoe`, X, Yr, intercept, p0, nu, s, nburn, npost, seed, verbose, printevery, chain_index)
+}
+
 cpp_sl_loglik_check <- function(X, Yr, lambda2_, sigma2, Z_) {
     .Call(`_BMIselect_cpp_sl_loglik_check`, X, Yr, lambda2_, sigma2, Z_)
 }

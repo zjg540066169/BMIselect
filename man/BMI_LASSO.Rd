@@ -12,14 +12,18 @@ BMI_LASSO(
   SNC = TRUE,
   grid = seq(0, 1, 0.01),
   orthogonal = FALSE,
-  nburn = 4000,
-  npost = 4000,
+  nburn = 5000,
+  npost = 5000,
   seed = NULL,
   nchains = 1,
   ncores = 1,
   output_verbose = TRUE,
   printevery = 1000,
   selection_set = NULL,
+  diagnostics = TRUE,
+  RR = FALSE,
+  criterion = "bic",
+  search = "snc",
   ...
 )
 }
@@ -38,8 +42,15 @@ is the response for one imputation.}
 \item{standardize}{Logical; whether to normalize each \code{X} and centralize
 \code{Y} within each imputation before fitting.  Default \code{TRUE}.}
 
-\item{SNC}{Logical; if \code{TRUE}, use scaled neighborhood criterion;
-otherwise apply thresholding or median‐based selection. Default \code{TRUE}.}
+\item{SNC}{Logical; if \code{TRUE}, generate candidates with the scaled
+neighborhood criterion.  If \code{FALSE}, use a direct thresholding rule:
+for the shrinkage priors (\code{"Multi_Laplace"}, \code{"Horseshoe"},
+\code{"ARD"}) a symmetric credible-interval rule on the pooled coefficient;
+for \code{"Spike_Laplace"} a threshold on the posterior inclusion
+probability \eqn{p_j = \Pr(\gamma_j = 1 \mid y)}, estimated by the
+posterior mean of the inclusion indicator (\code{post_gamma}) -- taking the
+threshold at \code{0.5} yields the Barbieri & Berger (2004) median
+probability model.  Default \code{TRUE}.}
 
 \item{grid}{Numeric vector; grid of scaled neighborhood criterion (or thresholding) to explore.
 Default \code{seq(0,1,0.01)}.}
@@ -47,11 +58,14 @@ Default \code{seq(0,1,0.01)}.}
 \item{orthogonal}{Logical; if \code{TRUE}, using orthogonal approximations for
 degrees‐of‐freedom estimations.  Default \code{FALSE}.}
 
-\item{nburn}{Integer; number of burn-in MCMC iterations per chain. Default \code{4000}.}
+\item{nburn}{Integer; number of burn-in MCMC iterations per chain. Default \code{5000}.}
 
-\item{npost}{Integer; number of post-burn-in samples to retain per chain. Default \code{4000}.}
+\item{npost}{Integer; number of post-burn-in samples to retain per chain. Default \code{5000}.}
 
-\item{seed}{Optional integer; base random seed.  Each chain adds its index.}
+\item{seed}{Optional integer; base random seed.  Each chain adds its index.  When
+supplied, BLAS is pinned to a single thread for the duration of the fit so results
+are bit-reproducible (multithreaded BLAS otherwise makes the MCMC draws, and hence
+the selection, non-deterministic).}
 
 \item{nchains}{Integer; number of MCMC chains to run in parallel. Default \code{1}.}
 
@@ -61,13 +75,39 @@ degrees‐of‐freedom estimations.  Default \code{FALSE}.}
 
 \item{printevery}{Integer; print status every so many iterations. Default \code{1000}.}
 
-\item{selection_set}{Optional fixed selection set that bypasses the four-step
-search. A logical vector of length \code{p} (\code{TRUE} for the covariates
-to include). When supplied, scaled-neighborhood candidate generation and
-BIC selection are skipped and the fitted posterior is projected directly
-onto this set (\code{best_select} equals the supplied set and
-\code{bic_models} is \code{NULL}). Useful for post-selection inference under
-a fixed model, e.g. the true active set in simulations. Default \code{NULL}.}
+\item{selection_set}{Optional logical vector of length \code{p}.  If supplied, the
+four-step candidate-generation + BIC search is bypassed and the fitted posterior
+is projected and calibrated directly onto this fixed set (\code{bic_models} is then
+\code{NULL}).  Useful for post-selection inference under a pre-specified (e.g. the
+true) model.  At most \code{n - 2} variables may be selected (to keep the projection
+full rank and leave a residual degree of freedom for \eqn{\sigma^2}).  Default
+\code{NULL} (run the search).}
+
+\item{diagnostics}{Logical; if \code{TRUE} (default), compute rank-normalized
+split-Rhat and effective sample size summaries.  Set \code{FALSE} to skip them
+(faster, e.g. for large simulation studies).  Default \code{TRUE}.}
+
+\item{RR}{Logical; if \code{TRUE}, additionally report classic (normal
+approximation) Rubin's-rules intervals for the selected coefficients, as a
+comparison to the default shape-aware pooled-mixture credible interval.  The
+within-imputation variance is the per-imputation posterior variance and the
+between-imputation variance is the (centred) variance of the per-imputation
+posterior means; \eqn{T = \bar W + (1+1/D) B} and the interval is
+\eqn{\bar\beta \pm 1.96\sqrt{T}}.  The point estimate \eqn{\bar\beta} equals
+the pooled-mixture mean, so only the interval differs.  Adds \code{rr_lower}
+and \code{rr_upper} columns to \code{summary_table_selected} (computed on the
+\emph{calibrated} draws; \code{NA} for the \eqn{\sigma^2} row).  Default
+\code{FALSE}.}
+
+\item{criterion}{Character; model-size selection criterion along the candidate
+path. \code{"bic"} (default) uses the modified BIC; \code{"loo"} uses
+subject-level PSIS-LOO expected log predictive density (Piironen et al. 2020,
+Sec. 5.2) and selects the elpd-maximising subset.}
+
+\item{search}{Character; candidate-set generation. \code{"snc"} (default) uses
+the scaled-neighborhood grid; \code{"forward"} builds a nested path by forward
+stepwise search on the single-point projection loss (Piironen et al. 2020,
+Sec. 4).}
 
 \item{\dots}{Additional model-specific hyperparameters:
 \itemize{
@@ -87,11 +127,22 @@ selection (by BIC) for each chain.}
 posterior draws for the best submodel.}
 \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
 degrees-of-freedom for each candidate submodel.}
+\item{\code{loo_models}}{(\code{criterion = "loo"}) List of length
+\code{nchains}, each with the elpd path, max Pareto-k per candidate, and the
+elpd-maximising index; \code{NULL} otherwise.}
 \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 split-Rhat and other diagnostics for the full model.}
 \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
-for the selected submodel after projection.}
-\item{\code{running_time}}{Numeric; total fitting time in minutes.}
+for the selected submodel after projection.  If \code{RR = TRUE}, also
+carries \code{rr_lower} / \code{rr_upper} Rubin's-rules interval columns.}
+\item{\code{pooled}}{(\code{nchains > 1} only; \code{NULL} otherwise) The
+multi-chain \emph{pooled} four-step selection: all chains' draws are pooled
+and selected ONCE, so the chains yield a single coherent submodel rather than
+one selection per chain.  A list with \code{best_select}, \code{select},
+\code{bic_models} / \code{loo_models}, \code{posterior_best_models}
+(calibrated + projected draws), and \code{summary_table_selected} (pooled
+mean and 95\\% interval per coefficient).  The per-chain outputs above are
+unchanged.}
 }
 }
 \description{
