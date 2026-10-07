@@ -82,9 +82,12 @@ full rank and leave a residual degree of freedom for \eqn{\sigma^2}).  Default
 \code{NULL} (run the search).}
 
 \item{criterion}{Character; model-size selection criterion along the candidate
-path. \code{"bic"} (default) uses the modified BIC; \code{"loo"} uses
+path. \code{"bic"} (default) uses the modified BIC. \code{"loo-max"} uses
 subject-level PSIS-LOO expected log predictive density (Piironen et al. 2020,
-Sec. 5.2) and selects the elpd-maximising subset.}
+Sec. 5.2) and selects the elpd-maximising subset. \code{"loo-1se"} applies the
+one-standard-error rule of Piironen et al. (2020) to the same PSIS-LOO path,
+selecting the smallest candidate within one standard error of the
+elpd-maximising one. \code{"loo"} is an alias for \code{"loo-max"}.}
 
 \item{\dots}{Additional model-specific hyperparameters:
 \itemize{
@@ -104,9 +107,10 @@ selection (by BIC) for each chain.}
 posterior draws for the best submodel.}
 \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
 degrees-of-freedom for each candidate submodel.}
-\item{\code{loo_models}}{(\code{criterion = "loo"}) List of length
-\code{nchains}, each with the elpd path, max Pareto-k per candidate, and the
-elpd-maximising index; \code{NULL} otherwise.}
+\item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) List of
+length \code{nchains}, each with the elpd path, its pointwise contributions,
+the max Pareto-k per candidate, the candidate sizes, the elpd-maximising
+index and the one-standard-error index; \code{NULL} otherwise.}
 \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 split-Rhat and other diagnostics for the full model.}
 \item{\code{summary_table_selected}}{A data frame summarizing diagnostics

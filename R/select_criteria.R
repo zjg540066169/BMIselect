@@ -100,8 +100,22 @@ forward_candidates <- function(X, model_chains, n_max, standardize = TRUE) {
 ## and the subject-level LOO expected log predictive density is estimated with
 ## Pareto-smoothed importance sampling (loo package). Returns, per chain, the
 ## elpd path, the max Pareto-k diagnostic per candidate (k <= 0.7 => reliable),
-## and the index of the elpd-maximising subset (the "min" rule).
+## and the index of the elpd-maximising subset and of the one-standard-error subset.
 ## ---------------------------------------------------------------------------
+## One-standard-error rule (Piironen et al. 2020, Eq. (22)-(23)): among the
+## candidates whose mean pointwise elpd difference from the elpd-maximising
+## candidate, plus the standard error of that paired difference, is non-negative,
+## take the one with the fewest variables.
+.pick_1se <- function(elpd, elpd_pw, sizes) {
+  ub <- elpd_pw[[which.max(elpd)]]
+  ok <- vapply(seq_along(elpd), function(k) {
+    dd <- elpd_pw[[k]] - ub
+    mean(dd) + stats::sd(dd) / sqrt(length(dd)) >= 0
+  }, logical(1))
+  oi <- which(ok)
+  oi[which.min(sizes[oi])]
+}
+
 loo_select <- function(X, Y, model_chains, select, standardize = TRUE) {
   lapply(seq_along(model_chains), function(i) {
     cc   <- model_chains[[i]]
@@ -121,6 +135,8 @@ loo_select <- function(X, Y, model_chains, select, standardize = TRUE) {
       pk[r]   <- suppressWarnings(max(lr$diagnostics$pareto_k, na.rm = TRUE))
       pw[[r]] <- lr$pointwise[, "elpd_loo"]
     }
-    list(elpd = elpd, pareto_k = pk, best = which.max(elpd), elpd_pw = pw)
+    sizes <- rowSums(cand)
+    list(elpd = elpd, elpd_pw = pw, pareto_k = pk, size = sizes,
+         best = which.max(elpd), best_1se = .pick_1se(elpd, pw, sizes))
   })
 }

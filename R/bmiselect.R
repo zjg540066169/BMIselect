@@ -109,7 +109,8 @@ if (getRversion() >= "2.15.1") {
       best_select <- select[which.min(bic_models[1, ]), , drop = FALSE]
     } else {
       loo_models  <- loo_select(X, Y, list(pc), list(select), standardize = standardize)[[1]]
-      best_select <- select[loo_models$best, , drop = FALSE]
+      idx         <- if (criterion == "loo-1se") loo_models$best_1se else loo_models$best
+      best_select <- select[idx, , drop = FALSE]
     }
   }
   list(best_select = best_select, select = select, bic_models = bic_models,
@@ -230,9 +231,12 @@ if (getRversion() >= "2.15.1") {
 #'   full rank and leave a residual degree of freedom for \eqn{\sigma^2}).  Default
 #'   \code{NULL} (run the search).
 #' @param criterion Character; model-size selection criterion along the candidate
-#'   path. \code{"bic"} (default) uses the modified BIC; \code{"loo"} uses
+#'   path. \code{"bic"} (default) uses the modified BIC. \code{"loo-max"} uses
 #'   subject-level PSIS-LOO expected log predictive density (Piironen et al. 2020,
-#'   Sec. 5.2) and selects the elpd-maximising subset.
+#'   Sec. 5.2) and selects the elpd-maximising subset. \code{"loo-1se"} applies the
+#'   one-standard-error rule of Piironen et al. (2020) to the same PSIS-LOO path,
+#'   selecting the smallest candidate within one standard error of the
+#'   elpd-maximising one. \code{"loo"} is an alias for \code{"loo-max"}.
 #' @param \dots Additional model-specific hyperparameters:
 #'   - For \code{"Multi_Laplace"}: \code{h} (shape) and \code{v} (scale) of Gamma hyperprior.
 #'   - For \code{"Spike_Laplace"}: \code{a} (shape) and \code{b} (scale) of Gamma hyperprior.
@@ -248,9 +252,10 @@ if (getRversion() >= "2.15.1") {
 #'     posterior draws for the best submodel.}
 #'   \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
 #'     degrees-of-freedom for each candidate submodel.}
-#'   \item{\code{loo_models}}{(\code{criterion = "loo"}) List of length
-#'     \code{nchains}, each with the elpd path, max Pareto-k per candidate, and the
-#'     elpd-maximising index; \code{NULL} otherwise.}
+#'   \item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) List of
+#'     length \code{nchains}, each with the elpd path, its pointwise contributions,
+#'     the max Pareto-k per candidate, the candidate sizes, the elpd-maximising
+#'     index and the one-standard-error index; \code{NULL} otherwise.}
 #'   \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 #'     split-Rhat and other diagnostics for the full model.}
 #'   \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
@@ -281,7 +286,9 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   if (!model %in% c("Multi_Laplace", "Horseshoe", "ARD", "Spike_Laplace")) {
     stop("Invalid model_name. Available options: Multi_Laplace, Horseshoe, ARD, Spike_Laplace.")
   }
-  if (!criterion %in% c("bic", "loo")) stop('criterion must be "bic" or "loo".')
+  if (!criterion %in% c("bic", "loo-max", "loo-1se", "loo"))
+    stop('criterion must be one of "bic", "loo-max", "loo-1se".')
+  if (identical(criterion, "loo")) criterion <- "loo-max"
   if (!search %in% c("grid", "snc", "forward")) stop('search must be "grid", "snc", or "forward".')
 
 
@@ -644,8 +651,10 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   loo_models <- NULL
   } else {
     loo_models  <- loo_select(X, Y, model_chains, select, standardize = standardize)
-    best_select <- lapply(seq_along(loo_models), function(i)
-                          select[[i]][loo_models[[i]]$best, , drop = FALSE])
+    best_select <- lapply(seq_along(loo_models), function(i) {
+      idx <- if (criterion == "loo-1se") loo_models[[i]]$best_1se else loo_models[[i]]$best
+      select[[i]][idx, , drop = FALSE]
+    })
     bic_models  <- NULL
   }
   } else {

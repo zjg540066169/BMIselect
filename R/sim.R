@@ -40,10 +40,10 @@ impute_MI <- function(X_miss, Y, n_imp = 5, donors = 5L) {
 #' and multiple imputations via predictive mean matching.
 #'
 #' @param n Integer. Number of observations.
-#' @param p Integer. Number of covariates (columns). Takes values in \{20, 40\}.
+#' @param p Integer. Number of covariates (columns). Missingness is generated in columns 11-20 when \code{p = 20}, and in columns 11-20 and 31-40 otherwise.
 #' @param type Character. Missingness mechanism: "MCAR" or "MAR".
 #' @param SNP Numeric. Signal-to-noise ratio controlling error variance.
-#' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness.
+#' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness. FALSE is available only for \code{p = 20}.
 #' @param n_imp Integer. Number of multiple imputations to generate.
 #' @param seed Integer or NULL. Random seed for reproducibility.
 #'
@@ -64,6 +64,8 @@ impute_MI <- function(X_miss, Y, n_imp = 5, donors = 5L) {
 #' @export
 #' @importFrom stats rnorm rbinom complete.cases lm var sd median rgamma coef rcauchy rbeta vcov quantile
 sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n_imp = 5, seed = NULL){
+  if (!low_missing && p != 20)
+    stop("low_missing = FALSE is implemented only for p = 20.")
   if(!is.null(seed))
     set.seed(seed)
 
@@ -161,10 +163,10 @@ sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n
 #' and multiple imputations via predictive mean matching.
 #'
 #' @param n Integer. Number of observations.
-#' @param p Integer. Number of covariates (columns). Takes values in \{20, 40\}.
+#' @param p Integer. Number of covariates (columns). Missingness is generated in columns 11-20 when \code{p = 20}, and in columns 11-20 and 31-40 otherwise.
 #' @param type Character. Missingness mechanism: "MCAR" or "MAR".
 #' @param SNP Numeric. Signal-to-noise ratio controlling error variance.
-#' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness.
+#' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness. FALSE is available only for \code{p = 20}.
 #' @param corr Numeric. AR(1) correlation parameter
 #' @param n_imp Integer. Number of multiple imputations to generate.
 #' @param seed Integer or NULL. Random seed for reproducibility.
@@ -185,6 +187,8 @@ sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n
 #' str(sim)
 #' @export
 sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, corr = 0.5, n_imp = 5, seed = NULL){
+  if (!low_missing && p != 20)
+    stop("low_missing = FALSE is implemented only for p = 20.")
   if(!is.null(seed))
     set.seed(seed)
 
@@ -226,7 +230,6 @@ sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
       }else{
         R = matrix(0, nrow = n, ncol = p)
         for (j in c(11:20, 31:40)) {
-          alpha = 0
           R[,j] = rbinom(n, 1, arm::invlogit(-5.5 + 0.5 * Y + 0.5 * X[, j - 10]))
         }
       }
@@ -283,7 +286,7 @@ sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
 #' Generates binary covariates by thresholding an AR(1) latent Gaussian, then proceeds as in sim_B.
 #'
 #' @param n Integer. Number of observations.
-#' @param p Integer. Number of covariates (columns). Takes values in \{20, 40\}.
+#' @param p Integer. Number of covariates (columns). Only \code{p = 20} is available.
 #' @param type Character. Missingness mechanism: "MCAR" or "MAR".
 #' @param SNP Numeric. Signal-to-noise ratio controlling error variance.
 #' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness.
@@ -307,6 +310,8 @@ sim_B = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, c
 #' str(sim)
 #' @export
 sim_C = function(n = 100, p = 20, low_missing = TRUE, type = "MAR", SNP = 1.5, corr = 0.5, n_imp = 5, seed = NULL){
+  if (p != 20)
+    stop("sim_C is implemented only for p = 20.")
   if(!is.null(seed))
     set.seed(seed)
 

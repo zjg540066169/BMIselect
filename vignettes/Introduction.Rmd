@@ -81,10 +81,10 @@ The first three priors are called shrinkage priors, which gently push the coeffi
 
 In the second stage, we apply a four-step projection predictive variable selection method to address the limitations above:
 
-1. Generate candidate variable subsets using different thresholds between 0 and 1 (specified by the parameter `grid`). The thresholds will be used by a scaled-neighborhood criterion (see more details in the paper). A candidate set excludes all variables when the threshold is 0, and keeping all variables when the threshold is 1.
+1. Generate candidate variable subsets using different thresholds between 0 and 1 (specified by the parameter `grid`). The threshold is the level of the symmetric credible interval for the shrinkage priors, and the posterior inclusion probability for the Spike-and-Laplace prior, with a variable entering the candidate set when its interval excludes zero or its probability reaches the threshold. A candidate set keeps all variables when the threshold is 0, and almost none when the threshold is 1.
 2. Fit submodels using each candidate subset. Each submodel attempts to approximate the full model as closely as possible.
 3. Evaluate each submodel using the Bayesian Information Criterion (BIC). Select the optimal submodel based on the smallest BIC value.
-4. Report the calibrated post-selection estimates from the optimal submodel.
+4. Report the approximately calibrated post-selection estimates from the optimal submodel.
 
 
 See Zou, J., Wang, S. and Chen, Q. (2025), Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Data. ArXiv, 2211.00114. <doi:10.48550/arXiv.2211.00114> for more details.
