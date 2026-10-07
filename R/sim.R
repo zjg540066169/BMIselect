@@ -40,7 +40,7 @@ impute_MI <- function(X_miss, Y, n_imp = 5, donors = 5L) {
 #' and multiple imputations via predictive mean matching.
 #'
 #' @param n Integer. Number of observations.
-#' @param p Integer. Number of covariates (columns). Missingness is generated in columns 11-20 when \code{p = 20}, and in columns 11-20 and 31-40 otherwise.
+#' @param p Integer. Number of covariates (columns). Either 20, or 40 or more.
 #' @param type Character. Missingness mechanism: "MCAR" or "MAR".
 #' @param SNP Numeric. Signal-to-noise ratio controlling error variance.
 #' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness. FALSE is available only for \code{p = 20}.
@@ -163,7 +163,7 @@ sim_A = function(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n
 #' and multiple imputations via predictive mean matching.
 #'
 #' @param n Integer. Number of observations.
-#' @param p Integer. Number of covariates (columns). Missingness is generated in columns 11-20 when \code{p = 20}, and in columns 11-20 and 31-40 otherwise.
+#' @param p Integer. Number of covariates (columns). Either 20, or 40 or more.
 #' @param type Character. Missingness mechanism: "MCAR" or "MAR".
 #' @param SNP Numeric. Signal-to-noise ratio controlling error variance.
 #' @param low_missing Logical. If TRUE, use low missingness rates; if FALSE, higher missingness. FALSE is available only for \code{p = 20}.

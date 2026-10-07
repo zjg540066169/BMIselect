@@ -187,7 +187,7 @@ if (getRversion() >= "2.15.1") {
 #' multiply-imputed datasets, using one of four priors: Multi-Laplace,
 #' Horseshoe, ARD, or Spike-Laplace. Automatically standardizes data,
 #' runs MCMC in parallel, performs variable selection via four-step
-#' projection predictive variable selection, and selects a final submodel by BIC.
+#' projection predictive variable selection, and selects a final submodel.
 #'
 #' @param X A numeric matrix or array of predictors.  If a matrix \code{n × p},
 #'   it is taken as one imputation; if an array \code{D × n × p}, each slice
@@ -247,15 +247,15 @@ if (getRversion() >= "2.15.1") {
 #'   \item{\code{select}}{List of length \code{nchains} of logical matrices showing
 #'     which variables are selected at each grid value.}
 #'   \item{\code{best_select}}{List of length \code{nchains} of the single best
-#'     selection (by BIC) for each chain.}
+#'     selection for each chain.}
 #'   \item{\code{posterior_best_models}}{List of length \code{nchains} of projected
 #'     posterior draws for the best submodel.}
 #'   \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
 #'     degrees-of-freedom for each candidate submodel.}
-#'   \item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) List of
-#'     length \code{nchains}, each with the elpd path, its pointwise contributions,
-#'     the max Pareto-k per candidate, the candidate sizes, the elpd-maximising
-#'     index and the one-standard-error index; \code{NULL} otherwise.}
+#'   \item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) The elpd
+#'     path, its pointwise contributions, the max Pareto-k per candidate, the
+#'     candidate sizes, the elpd-maximising index and the one-standard-error
+#'     index. \code{NULL} otherwise.}
 #'   \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 #'     split-Rhat and other diagnostics for the full model.}
 #'   \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
@@ -411,13 +411,15 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   # -------------------------------
   # 7. Set up parallel execution
   # -------------------------------
-  if (ncores == 1) {
+  if (ncores == 1 || nchains == 1) {
     foreach::registerDoSEQ()
   } else {
     ## Workers are fresh R sessions: they inherit neither this session's library
     ## paths nor the package namespace, so hand both over before running tasks.
-    cl <- parallel::makePSOCKcluster(ncores)
-    on.exit(parallel::stopCluster(cl), add = TRUE)
+    ## The backend is reset together with the cluster, so an error part way
+    ## through does not leave foreach pointing at a closed one.
+    cl <- parallel::makePSOCKcluster(min(ncores, nchains))
+    on.exit({ foreach::registerDoSEQ(); parallel::stopCluster(cl) }, add = TRUE)
     parallel::clusterCall(cl, function(paths) .libPaths(paths), .libPaths())
     parallel::clusterEvalQ(cl, loadNamespace("BMIselect"))
     doParallel::registerDoParallel(cl)
@@ -574,7 +576,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   })
 
   # -------------------------------
-  # 12. Model selection: BIC (default) or PSIS-LOO (criterion = "loo")
+  # 12. Model selection: BIC (default) or PSIS-LOO
   # -------------------------------
   if (criterion == "bic") {
   bic_models = foreach::foreach(

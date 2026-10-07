@@ -17,7 +17,7 @@ sim_A(
 \arguments{
 \item{n}{Integer. Number of observations.}
 
-\item{p}{Integer. Number of covariates (columns). Missingness is generated in columns 11-20 when \code{p = 20}, and in columns 11-20 and 31-40 otherwise.}
+\item{p}{Integer. Number of covariates (columns). Either 20, or 40 or more.}
 
 \item{type}{Character. Missingness mechanism: "MCAR" or "MAR".}
 

@@ -102,15 +102,15 @@ A named list with elements:
 \item{\code{select}}{List of length \code{nchains} of logical matrices showing
 which variables are selected at each grid value.}
 \item{\code{best_select}}{List of length \code{nchains} of the single best
-selection (by BIC) for each chain.}
+selection for each chain.}
 \item{\code{posterior_best_models}}{List of length \code{nchains} of projected
 posterior draws for the best submodel.}
 \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
 degrees-of-freedom for each candidate submodel.}
-\item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) List of
-length \code{nchains}, each with the elpd path, its pointwise contributions,
-the max Pareto-k per candidate, the candidate sizes, the elpd-maximising
-index and the one-standard-error index; \code{NULL} otherwise.}
+\item{\code{loo_models}}{(\code{criterion} other than \code{"bic"}) The elpd
+path, its pointwise contributions, the max Pareto-k per candidate, the
+candidate sizes, the elpd-maximising index and the one-standard-error
+index. \code{NULL} otherwise.}
 \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 split-Rhat and other diagnostics for the full model.}
 \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
@@ -130,7 +130,7 @@ Fit a Bayesian multiple-imputation LASSO (BMI-LASSO) model across
 multiply-imputed datasets, using one of four priors: Multi-Laplace,
 Horseshoe, ARD, or Spike-Laplace. Automatically standardizes data,
 runs MCMC in parallel, performs variable selection via four-step
-projection predictive variable selection, and selects a final submodel by BIC.
+projection predictive variable selection, and selects a final submodel.
 }
 \examples{
 sim <- sim_A(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n_imp = 5, seed = 123)
