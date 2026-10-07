@@ -70,28 +70,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_reg_horseshoe
-List cpp_reg_horseshoe(NumericVector X, NumericMatrix Yr, bool intercept, double p0, double nu, double s, int nburn, int npost, SEXP seed, bool verbose, int printevery, int chain_index);
-RcppExport SEXP _BMIselect_cpp_reg_horseshoe(SEXP XSEXP, SEXP YrSEXP, SEXP interceptSEXP, SEXP p0SEXP, SEXP nuSEXP, SEXP sSEXP, SEXP nburnSEXP, SEXP npostSEXP, SEXP seedSEXP, SEXP verboseSEXP, SEXP printeverySEXP, SEXP chain_indexSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type Yr(YrSEXP);
-    Rcpp::traits::input_parameter< bool >::type intercept(interceptSEXP);
-    Rcpp::traits::input_parameter< double >::type p0(p0SEXP);
-    Rcpp::traits::input_parameter< double >::type nu(nuSEXP);
-    Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    Rcpp::traits::input_parameter< int >::type nburn(nburnSEXP);
-    Rcpp::traits::input_parameter< int >::type npost(npostSEXP);
-    Rcpp::traits::input_parameter< SEXP >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    Rcpp::traits::input_parameter< int >::type printevery(printeverySEXP);
-    Rcpp::traits::input_parameter< int >::type chain_index(chain_indexSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_reg_horseshoe(X, Yr, intercept, p0, nu, s, nburn, npost, seed, verbose, printevery, chain_index));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_sl_loglik_check
 NumericMatrix cpp_sl_loglik_check(NumericVector X, NumericMatrix Yr, NumericVector lambda2_, double sigma2, IntegerVector Z_);
 RcppExport SEXP _BMIselect_cpp_sl_loglik_check(SEXP XSEXP, SEXP YrSEXP, SEXP lambda2_SEXP, SEXP sigma2SEXP, SEXP Z_SEXP) {
@@ -133,7 +111,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BMIselect_cpp_ard", (DL_FUNC) &_BMIselect_cpp_ard, 9},
     {"_BMIselect_cpp_horseshoe", (DL_FUNC) &_BMIselect_cpp_horseshoe, 9},
     {"_BMIselect_cpp_multi_laplace", (DL_FUNC) &_BMIselect_cpp_multi_laplace, 11},
-    {"_BMIselect_cpp_reg_horseshoe", (DL_FUNC) &_BMIselect_cpp_reg_horseshoe, 12},
     {"_BMIselect_cpp_sl_loglik_check", (DL_FUNC) &_BMIselect_cpp_sl_loglik_check, 5},
     {"_BMIselect_cpp_spike_laplace", (DL_FUNC) &_BMIselect_cpp_spike_laplace, 11},
     {NULL, NULL, 0}

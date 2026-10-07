@@ -33,17 +33,4 @@ the predictive projection of each draw onto the submodel defined by \code{xs_vec
 Returns the projected coefficients (and intercepts, if requested) plus the projected
 residual variance for each posterior draw.
 }
-\examples{
-D <- 3; n <- 50; p <- 5; npost <- 100
-X_arr      <- array(rnorm(D*n*p), c(D, n, p))
-beta1_arr  <- array(rnorm(npost*D*p), c(npost, D, p))
-sigma1_vec <- runif(npost, 0.5, 2)
-xs_vec     <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
-# Without intercept
-proj <- projection_posterior(X_arr, beta1_arr, sigma1_vec, xs_vec)
-str(proj)
-# With intercept draws
-alpha1_arr <- matrix(rnorm(npost*D), nrow = npost, ncol = D)
-proj2 <- projection_posterior(X_arr, beta1_arr, sigma1_vec, xs_vec, alpha1_arr)
-str(proj2)
-}
+\keyword{internal}

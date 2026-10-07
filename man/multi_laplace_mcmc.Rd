@@ -64,10 +64,4 @@ local shrinkage parameters (\code{lambda2}) across imputations and places
 a Gamma(\code{h}, \code{v}) hyperprior on the global parameter \code{rho}.
 The Gibbs sampler is implemented in C++ (RcppArmadillo).
 }
-\examples{
-sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5, low_missing = TRUE,
-n_imp = 5, seed = 123)
-X <- sim$data_MI$X
-Y <- sim$data_MI$Y
-fit <- multi_laplace_mcmc(X, Y, intercept = TRUE, nburn = 100, npost = 100)
-}
+\keyword{internal}

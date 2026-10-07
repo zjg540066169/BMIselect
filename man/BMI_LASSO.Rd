@@ -9,7 +9,7 @@ BMI_LASSO(
   Y,
   model,
   standardize = TRUE,
-  SNC = TRUE,
+  search = "grid",
   grid = seq(0, 1, 0.01),
   orthogonal = FALSE,
   nburn = 5000,
@@ -20,10 +20,7 @@ BMI_LASSO(
   output_verbose = TRUE,
   printevery = 1000,
   selection_set = NULL,
-  diagnostics = TRUE,
-  RR = FALSE,
   criterion = "bic",
-  search = "snc",
   ...
 )
 }
@@ -42,18 +39,19 @@ is the response for one imputation.}
 \item{standardize}{Logical; whether to normalize each \code{X} and centralize
 \code{Y} within each imputation before fitting.  Default \code{TRUE}.}
 
-\item{SNC}{Logical; if \code{TRUE}, generate candidates with the scaled
-neighborhood criterion.  If \code{FALSE}, use a direct thresholding rule:
-for the shrinkage priors (\code{"Multi_Laplace"}, \code{"Horseshoe"},
-\code{"ARD"}) a symmetric credible-interval rule on the pooled coefficient;
-for \code{"Spike_Laplace"} a threshold on the posterior inclusion
-probability \eqn{p_j = \Pr(\gamma_j = 1 \mid y)}, estimated by the
-posterior mean of the inclusion indicator (\code{post_gamma}) -- taking the
-threshold at \code{0.5} yields the Barbieri & Berger (2004) median
-probability model.  Default \code{TRUE}.}
+\item{search}{Character; how the candidate submodels along the path are
+generated. \code{"grid"} (default) applies a per-coefficient marginal rule
+over \code{grid}: for the shrinkage priors (\code{"Multi_Laplace"},
+\code{"Horseshoe"}, \code{"ARD"}) the symmetric credible interval that
+excludes 0, and for \code{"Spike_Laplace"} the posterior inclusion
+probability \eqn{p_j = \Pr(\gamma_j = 1 \mid y)} at or above the grid value
+(\code{0.5} gives the Barbieri & Berger (2004) median-probability model).
+\code{"snc"} uses the scaled-neighborhood criterion over \code{grid}.
+\code{"forward"} builds a nested path by forward stepwise search on the
+single-point projection loss (Piironen et al. 2020, Sec. 4).}
 
-\item{grid}{Numeric vector; grid of scaled neighborhood criterion (or thresholding) to explore.
-Default \code{seq(0,1,0.01)}.}
+\item{grid}{Numeric vector; thresholds explored by the \code{"grid"} and
+\code{"snc"} searches (ignored by \code{"forward"}). Default \code{seq(0,1,0.01)}.}
 
 \item{orthogonal}{Logical; if \code{TRUE}, using orthogonal approximations for
 degrees‐of‐freedom estimations.  Default \code{FALSE}.}
@@ -83,31 +81,10 @@ true) model.  At most \code{n - 2} variables may be selected (to keep the projec
 full rank and leave a residual degree of freedom for \eqn{\sigma^2}).  Default
 \code{NULL} (run the search).}
 
-\item{diagnostics}{Logical; if \code{TRUE} (default), compute rank-normalized
-split-Rhat and effective sample size summaries.  Set \code{FALSE} to skip them
-(faster, e.g. for large simulation studies).  Default \code{TRUE}.}
-
-\item{RR}{Logical; if \code{TRUE}, additionally report classic (normal
-approximation) Rubin's-rules intervals for the selected coefficients, as a
-comparison to the default shape-aware pooled-mixture credible interval.  The
-within-imputation variance is the per-imputation posterior variance and the
-between-imputation variance is the (centred) variance of the per-imputation
-posterior means; \eqn{T = \bar W + (1+1/D) B} and the interval is
-\eqn{\bar\beta \pm 1.96\sqrt{T}}.  The point estimate \eqn{\bar\beta} equals
-the pooled-mixture mean, so only the interval differs.  Adds \code{rr_lower}
-and \code{rr_upper} columns to \code{summary_table_selected} (computed on the
-\emph{calibrated} draws; \code{NA} for the \eqn{\sigma^2} row).  Default
-\code{FALSE}.}
-
 \item{criterion}{Character; model-size selection criterion along the candidate
 path. \code{"bic"} (default) uses the modified BIC; \code{"loo"} uses
 subject-level PSIS-LOO expected log predictive density (Piironen et al. 2020,
 Sec. 5.2) and selects the elpd-maximising subset.}
-
-\item{search}{Character; candidate-set generation. \code{"snc"} (default) uses
-the scaled-neighborhood grid; \code{"forward"} builds a nested path by forward
-stepwise search on the single-point projection loss (Piironen et al. 2020,
-Sec. 4).}
 
 \item{\dots}{Additional model-specific hyperparameters:
 \itemize{
@@ -133,8 +110,7 @@ elpd-maximising index; \code{NULL} otherwise.}
 \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 split-Rhat and other diagnostics for the full model.}
 \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
-for the selected submodel after projection.  If \code{RR = TRUE}, also
-carries \code{rr_lower} / \code{rr_upper} Rubin's-rules interval columns.}
+for the selected submodel after projection.}
 \item{\code{pooled}}{(\code{nchains > 1} only; \code{NULL} otherwise) The
 multi-chain \emph{pooled} four-step selection: all chains' draws are pooled
 and selected ONCE, so the chains yield a single coherent submodel rather than

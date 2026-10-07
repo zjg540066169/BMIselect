@@ -72,10 +72,4 @@ The partially-collapsed Gibbs update of the inclusion indicators uses a
 rank-1 Woodbury / matrix-determinant update, ported from the reference R
 implementation by Jungang Zou, 2024-2026.
 }
-\examples{
-sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5,
-low_missing = TRUE, n_imp = 5, seed = 123)
-X <- sim$data_MI$X
-Y <- sim$data_MI$Y
-fit <- spike_laplace_partially_mcmc(X, Y, nburn = 10, npost = 10)
-}
+\keyword{internal}

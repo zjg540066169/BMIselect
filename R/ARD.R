@@ -28,13 +28,7 @@
 #'   \item{\code{hat_matrix_proj}}{Array \code{D × n × n} of averaged projection hat-matrices.}
 #' }
 #'
-#' @examples
-#' sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5,
-#' low_missing = TRUE, n_imp = 5, seed = 123)
-#' X <- sim$data_MI$X
-#' Y <- sim$data_MI$Y
-#' fit <- ARD_mcmc(X, Y, nburn = 100, npost = 100)
-#' @export
+#' @keywords internal
 ARD_mcmc = function(X, Y, intercept = TRUE, nburn = 4000, npost = 4000,
                     seed = NULL, verbose = TRUE, printevery = 1000,
                     chain_index = 1) {

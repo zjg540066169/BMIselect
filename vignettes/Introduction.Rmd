@@ -27,6 +27,16 @@ seed = 12345
 set.seed(seed)
 ```
 
+
+## Limitations
+Here are some limitations about this package:
+
+1. Currently, our package only supports continuous outcomes. Binary, categorical and ordinal outcomes are our research topic in the future.
+2. We support continuous and binary covariates. Selection for categorical covariates is tricky. Generally we transform a categorical variable into a set of binary dummy variables. Our package supports the selection on each dummy variable. For selection of the whole group, we will research it in the future.
+3. Similarly to other variable selection methods, our models are sensitive to multicollinearity. If some covariates are highly correlated, we suggest to do some pre-processing before using our methods. 
+
+
+
 ## Data Preparation
 The functions of `sim_A()`, `sim_B()`, `sim_C()` are used to generate data based on the simulation section in the original paper. Here we use `sim_A()` to simulate a dataset of $n=200$ samples with $p=20$ covariates. The $p=20$ covariates are independent standard normals. Among them, the $1,2,5,11,12,15$-th covariates are used to build outcome model, with coefficients are all ones. Missingness are generated based on MAR assumption. Multiple imputation is based on MICE. We generate five imputed sets.
 
@@ -74,7 +84,7 @@ In the second stage, we apply a four-step projection predictive variable selecti
 1. Generate candidate variable subsets using different thresholds between 0 and 1 (specified by the parameter `grid`). The thresholds will be used by a scaled-neighborhood criterion (see more details in the paper). A candidate set excludes all variables when the threshold is 0, and keeping all variables when the threshold is 1.
 2. Fit submodels using each candidate subset. Each submodel attempts to approximate the full model as closely as possible.
 3. Evaluate each submodel using the Bayesian Information Criterion (BIC). Select the optimal submodel based on the smallest BIC value.
-4. Report the post-selection estimates from the optimal submodel.
+4. Report the calibrated post-selection estimates from the optimal submodel.
 
 
 See Zou, J., Wang, S. and Chen, Q. (2025), Bayesian MI-LASSO for Variable Selection on Multiply-Imputed Data. ArXiv, 2211.00114. <doi:10.48550/arXiv.2211.00114> for more details.
@@ -199,12 +209,6 @@ str(milasso)
 ```
 
 
-## Discussion 
-Here are some discussions about this package:
-
-1. Currently, our package only supports continuous outcomes. Binary, categorical and ordinal outcomes are our research topic in the future.
-2. We support continuous and binary covariates. Selection for categorical covariates is tricky. Generally we transform a categorical variable into a set of binary dummy variables. Our package supports the selection on each dummy variable. For selection of the whole group, we will research it in the future.
-3. Similarly to other variable selection methods, our models are sensitive to multicollinearity. If some covariates are highly correlated, we suggest to do some pre-processing before using our methods. 
 
 
 ## Disclaimer

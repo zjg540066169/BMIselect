@@ -58,10 +58,4 @@ to regression coefficients via a global scale (\code{tau2}), local scales
 (\code{lambda2}), and auxiliary hyperpriors (\code{kappa}, \code{eta}).
 The Gibbs sampler is implemented in C++ (RcppArmadillo).
 }
-\examples{
-sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5,
-low_missing = TRUE, n_imp = 5, seed = 123)
-X <- sim$data_MI$X
-Y <- sim$data_MI$Y
-fit <- horseshoe_mcmc(X, Y, nburn = 100, npost = 100)
-}
+\keyword{internal}

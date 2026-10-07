@@ -32,13 +32,7 @@
 #'   \item{\code{hat_matrix_proj}}{Array \code{D × n × n} of averaged projection hat-matrices.}
 #'   \item{\code{h}, \code{v}}{Numeric; the shape and scale hyperparameters used.}
 #' }
-#' @examples
-#' sim <- sim_B(n = 100, p = 20, type = "MAR", SNP = 1.5, corr = 0.5, low_missing = TRUE,
-#' n_imp = 5, seed = 123)
-#' X <- sim$data_MI$X
-#' Y <- sim$data_MI$Y
-#' fit <- multi_laplace_mcmc(X, Y, intercept = TRUE, nburn = 100, npost = 100)
-#' @export
+#' @keywords internal
 multi_laplace_mcmc = function(X, Y, intercept = TRUE, h = 2, v = NULL,
                               nburn = 4000, npost = 4000, seed = NULL,
                               verbose = TRUE, printevery = 1000,

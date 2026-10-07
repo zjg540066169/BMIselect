@@ -39,7 +39,7 @@ if (getRversion() >= "2.15.1") {
 # sampler convergence on a common support, not cross-chain disagreement about which
 # variables each chain happened to select -- AND by .pooled_multichain() below for
 # the pooled selected-model posterior.
-.pooled_select <- function(X, Y, model_chains, model, standardize, SNC, grid,
+.pooled_select <- function(X, Y, model_chains, model, standardize, grid,
                            selection_set, criterion, search) {
   nchains <- length(model_chains)
   D <- dim(X)[1]; n <- dim(X)[2]; p <- dim(X)[3]
@@ -64,12 +64,12 @@ if (getRversion() >= "2.15.1") {
   } else {
     if (search == "forward") {
       select <- forward_candidates(X, list(pc), n_max = n - 2, standardize = standardize)[[1]]
-    } else if (SNC) {
+    } else if (search == "snc") {
       SNCv <- apply(pc$post_pool_beta, 2, function(x) mean(abs(x) <= sqrt(stats::var(x))))
       select <- unique(rbind(
         t(sapply(as.character(grid), function(ci) SNCv < as.numeric(ci), simplify = TRUE, USE.NAMES = TRUE)),
         "median" = (apply(pc$post_pool_beta, 2, stats::median) != 0)))
-    } else if (model %in% c("Multi_Laplace", "Horseshoe", "Reg_Horseshoe", "ARD")) {
+    } else if (model %in% c("Multi_Laplace", "Horseshoe", "ARD")) {
       select <- unique(t(sapply(as.character(grid), function(ci) {
         ci <- as.numeric(ci)
         apply(pc$post_pool_beta, 2, function(x_j) prod(sign(stats::quantile(x_j, c((1 - ci)/2, 1 - (1 - ci)/2)))))
@@ -122,10 +122,10 @@ if (getRversion() >= "2.15.1") {
 # helpers, so the per-chain path is unchanged. Errors (a degenerate pool) are caught by
 # the caller. Returns best_select / select / bic_models / loo_models /
 # posterior_best_models / summary_table_selected.
-.pooled_multichain <- function(X, Y, model_chains, model, standardize, SNC, grid,
+.pooled_multichain <- function(X, Y, model_chains, model, standardize, grid,
                                selection_set, criterion, search, X_norm, X_mean, Y_mean) {
   D <- dim(X)[1]; n <- dim(X)[2]; p <- dim(X)[3]
-  ps <- .pooled_select(X, Y, model_chains, model, standardize, SNC, grid,
+  ps <- .pooled_select(X, Y, model_chains, model, standardize, grid,
                        selection_set, criterion, search)
   pc <- ps$pc; best_select <- ps$best_select; select <- ps$select
   bic_models <- ps$bic_models; loo_models <- ps$loo_models
@@ -198,17 +198,18 @@ if (getRversion() >= "2.15.1") {
 #'   \code{"Horseshoe"}, \code{"ARD"}, or \code{"Spike_Laplace"}.
 #' @param standardize Logical; whether to normalize each \code{X} and centralize
 #'   \code{Y} within each imputation before fitting.  Default \code{TRUE}.
-#' @param SNC Logical; if \code{TRUE}, generate candidates with the scaled
-#'   neighborhood criterion.  If \code{FALSE}, use a direct thresholding rule:
-#'   for the shrinkage priors (\code{"Multi_Laplace"}, \code{"Horseshoe"},
-#'   \code{"ARD"}) a symmetric credible-interval rule on the pooled coefficient;
-#'   for \code{"Spike_Laplace"} a threshold on the posterior inclusion
-#'   probability \eqn{p_j = \Pr(\gamma_j = 1 \mid y)}, estimated by the
-#'   posterior mean of the inclusion indicator (\code{post_gamma}) -- taking the
-#'   threshold at \code{0.5} yields the Barbieri & Berger (2004) median
-#'   probability model.  Default \code{TRUE}.
-#' @param grid Numeric vector; grid of scaled neighborhood criterion (or thresholding) to explore.
-#'   Default \code{seq(0,1,0.01)}.
+#' @param search Character; how the candidate submodels along the path are
+#'   generated. \code{"grid"} (default) applies a per-coefficient marginal rule
+#'   over \code{grid}: for the shrinkage priors (\code{"Multi_Laplace"},
+#'   \code{"Horseshoe"}, \code{"ARD"}) the symmetric credible interval that
+#'   excludes 0, and for \code{"Spike_Laplace"} the posterior inclusion
+#'   probability \eqn{p_j = \Pr(\gamma_j = 1 \mid y)} at or above the grid value
+#'   (\code{0.5} gives the Barbieri & Berger (2004) median-probability model).
+#'   \code{"snc"} uses the scaled-neighborhood criterion over \code{grid}.
+#'   \code{"forward"} builds a nested path by forward stepwise search on the
+#'   single-point projection loss (Piironen et al. 2020, Sec. 4).
+#' @param grid Numeric vector; thresholds explored by the \code{"grid"} and
+#'   \code{"snc"} searches (ignored by \code{"forward"}). Default \code{seq(0,1,0.01)}.
 #' @param orthogonal Logical; if \code{TRUE}, using orthogonal approximations for
 #'   degrees‐of‐freedom estimations.  Default \code{FALSE}.
 #' @param nburn Integer; number of burn-in MCMC iterations per chain. Default \code{5000}.
@@ -228,28 +229,10 @@ if (getRversion() >= "2.15.1") {
 #'   true) model.  At most \code{n - 2} variables may be selected (to keep the projection
 #'   full rank and leave a residual degree of freedom for \eqn{\sigma^2}).  Default
 #'   \code{NULL} (run the search).
-#' @param diagnostics Logical; if \code{TRUE} (default), compute rank-normalized
-#'   split-Rhat and effective sample size summaries.  Set \code{FALSE} to skip them
-#'   (faster, e.g. for large simulation studies).  Default \code{TRUE}.
-#' @param RR Logical; if \code{TRUE}, additionally report classic (normal
-#'   approximation) Rubin's-rules intervals for the selected coefficients, as a
-#'   comparison to the default shape-aware pooled-mixture credible interval.  The
-#'   within-imputation variance is the per-imputation posterior variance and the
-#'   between-imputation variance is the (centred) variance of the per-imputation
-#'   posterior means; \eqn{T = \bar W + (1+1/D) B} and the interval is
-#'   \eqn{\bar\beta \pm 1.96\sqrt{T}}.  The point estimate \eqn{\bar\beta} equals
-#'   the pooled-mixture mean, so only the interval differs.  Adds \code{rr_lower}
-#'   and \code{rr_upper} columns to \code{summary_table_selected} (computed on the
-#'   \emph{calibrated} draws; \code{NA} for the \eqn{\sigma^2} row).  Default
-#'   \code{FALSE}.
 #' @param criterion Character; model-size selection criterion along the candidate
 #'   path. \code{"bic"} (default) uses the modified BIC; \code{"loo"} uses
 #'   subject-level PSIS-LOO expected log predictive density (Piironen et al. 2020,
 #'   Sec. 5.2) and selects the elpd-maximising subset.
-#' @param search Character; candidate-set generation. \code{"snc"} (default) uses
-#'   the scaled-neighborhood grid; \code{"forward"} builds a nested path by forward
-#'   stepwise search on the single-point projection loss (Piironen et al. 2020,
-#'   Sec. 4).
 #' @param \dots Additional model-specific hyperparameters:
 #'   - For \code{"Multi_Laplace"}: \code{h} (shape) and \code{v} (scale) of Gamma hyperprior.
 #'   - For \code{"Spike_Laplace"}: \code{a} (shape) and \code{b} (scale) of Gamma hyperprior.
@@ -271,8 +254,7 @@ if (getRversion() >= "2.15.1") {
 #'   \item{\code{summary_table_full}}{A data frame summarizing rank-normalized
 #'     split-Rhat and other diagnostics for the full model.}
 #'   \item{\code{summary_table_selected}}{A data frame summarizing diagnostics
-#'     for the selected submodel after projection.  If \code{RR = TRUE}, also
-#'     carries \code{rr_lower} / \code{rr_upper} Rubin's-rules interval columns.}
+#'     for the selected submodel after projection.}
 #'   \item{\code{pooled}}{(\code{nchains > 1} only; \code{NULL} otherwise) The
 #'     multi-chain \emph{pooled} four-step selection: all chains' draws are pooled
 #'     and selected ONCE, so the chains yield a single coherent submodel rather than
@@ -292,15 +274,15 @@ if (getRversion() >= "2.15.1") {
 #'                  nchains = 1, ncores = 1)
 #' str(fit$best_select)
 #' @export
-BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 1, 0.01), orthogonal = FALSE, nburn = 5000, npost = 5000, seed = NULL, nchains = 1, ncores = 1, output_verbose = TRUE, printevery = 1000, selection_set = NULL, diagnostics = TRUE, RR = FALSE, criterion = "bic", search = "snc", ...){
+BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = seq(0, 1, 0.01), orthogonal = FALSE, nburn = 5000, npost = 5000, seed = NULL, nchains = 1, ncores = 1, output_verbose = TRUE, printevery = 1000, selection_set = NULL, criterion = "bic", ...){
   # -------------------------------
   # 1. Validate input model
   # -------------------------------
-  if (!model %in% c("Multi_Laplace", "Horseshoe", "Reg_Horseshoe", "ARD", "Spike_Laplace")) {
-    stop("Invalid model_name. Available options: Multi_Laplace, Horseshoe, Reg_Horseshoe, ARD, Spike_Laplace.")
+  if (!model %in% c("Multi_Laplace", "Horseshoe", "ARD", "Spike_Laplace")) {
+    stop("Invalid model_name. Available options: Multi_Laplace, Horseshoe, ARD, Spike_Laplace.")
   }
   if (!criterion %in% c("bic", "loo")) stop('criterion must be "bic" or "loo".')
-  if (!search %in% c("snc", "forward")) stop('search must be "snc" or "forward".')
+  if (!search %in% c("grid", "snc", "forward")) stop('search must be "grid", "snc", or "forward".')
 
 
   start = Sys.time()
@@ -416,20 +398,6 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
              if(output_verbose) cat(paste0("Missing 'b' for Spike_Laplace. Use default value b = ", (D+1)/(2 * D) / (extra_parameters$a - 1)), "\n")
              extra_parameters$b = (D+1)/(2 * D) / (extra_parameters$a - 1)
            }
-         },
-         "Reg_Horseshoe" = {
-           if (!("p0" %in% names(extra_parameters))) {
-             extra_parameters$p0 = min(p - 1, max(1, ceiling(p / 10)))
-             if(output_verbose) cat(paste0("Missing 'p0' for Reg_Horseshoe. Use default value p0 = ", extra_parameters$p0), "\n")
-           }
-           if (!("slab_df" %in% names(extra_parameters))) {
-             if(output_verbose) cat("Missing 'slab_df' for Reg_Horseshoe. Use default value slab_df = 4", "\n")
-             extra_parameters$slab_df = 4
-           }
-           if (!("slab_scale" %in% names(extra_parameters))) {
-             if(output_verbose) cat("Missing 'slab_scale' for Reg_Horseshoe. Use default value slab_scale = 2.5", "\n")
-             extra_parameters$slab_scale = 2.5
-           }
          }
   )
 
@@ -463,12 +431,6 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
                                    nburn = nburn, npost = npost, seed = seed_chain,
                                    verbose = output_verbose, printevery = printevery, chain_index = chain)
                   },
-                  "Reg_Horseshoe" = {
-                    reg_horseshoe_mcmc(X, Y, intercept = !standardize,
-                                       p0 = extra_parameters$p0, slab_df = extra_parameters$slab_df, slab_scale = extra_parameters$slab_scale,
-                                       nburn = nburn, npost = npost, seed = seed_chain,
-                                       verbose = output_verbose, printevery = printevery, chain_index = chain)
-                  },
                   "ARD" = {
                     ARD_mcmc(X, Y, intercept = !standardize,
                              nburn = nburn, npost = npost, seed = seed_chain,
@@ -499,8 +461,8 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
 
 
   # -------------------------------
-  # 10. Scaled Neighborhood Criterion
-  # If SNC is FALSE:
+  # 10. Candidate generation (search = "grid" / "snc" / "forward")
+  # search == "grid":
   # - For shrinkage models: use symmetric credible intervals
   # - For Spike_Laplace: threshold the posterior inclusion probability
   #   PIP_j = mean(post_gamma[, j]) (posterior mean of the inclusion
@@ -508,25 +470,26 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   #   Berger (2004) median probability model.  NB: use post_gamma (the
   #   indicator draws), NOT post_theta (the Beta mixing weight theta_j),
   #   whose posterior mean is a shrunken surrogate and not the PIP.
+  # search == "snc": scaled-neighborhood criterion.  "forward": stepwise.
   # -------------------------------
 
   if (is.null(selection_set)) {
   if (search == "forward") {
     select = forward_candidates(X, model_chains, n_max = n - 2, standardize = standardize)
-  } else if(SNC){
+  } else if (search == "snc") {
     select = lapply(model_chains, function(c) {
-      SNC = apply(c$post_pool_beta, 2, function(x) mean(abs(x) <= sqrt(stats::var(x))))
+      SNCv = apply(c$post_pool_beta, 2, function(x) mean(abs(x) <= sqrt(stats::var(x))))
       se = unique(rbind(
         t(sapply(as.character(grid), function(ci) {
           ci = as.numeric(ci)
-          SNC < ci
+          SNCv < ci
         }, simplify = TRUE, USE.NAMES = TRUE)),
         "median" = (apply(c$post_pool_beta, 2, median) != 0)
       ))
       se
     })
   }else{
-    if (model %in% c("Multi_Laplace", "Horseshoe", "Reg_Horseshoe", "ARD")) {
+    if (model %in% c("Multi_Laplace", "Horseshoe", "ARD")) {
       select = lapply(model_chains, function(c) {
         unique(t(sapply(as.character(grid), function(ci) {
           ci = as.numeric(ci)
@@ -640,13 +603,6 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
                      }))
                    }
                  },
-                 "Reg_Horseshoe" = {
-                   df = sum(sapply(1:D, function(d){
-                     X_d = X[d,,]
-                     X_ds = X_d[,subselect, drop = FALSE]
-                     sum(diag(Rfast::spdinv(crossprod(X_ds)) %*% crossprod(X_ds, model_chains[[i]]$hat_matrix_proj[d,,] %*% X_ds)))
-                   }))
-                 },
                  "ARD" = {
                    if(orthogonal){
                      df = D * mean(
@@ -693,7 +649,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
     bic_models  <- NULL
   }
   } else {
-    # selection_set supplied: bypass the four-step search (SNC + rank + BIC) and
+    # selection_set supplied: bypass the four-step search (candidate + rank + BIC) and
     # project/calibrate directly onto the fixed set. bic_models is NULL.
     select      <- NULL
     bic_models  <- NULL
@@ -713,7 +669,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   #      already shares one selection, so both are left untouched.)
   # -------------------------------
   if (nchains > 1 && is.null(selection_set)) {
-    shared      <- .pooled_select(X, Y, model_chains, model, standardize, SNC, grid,
+    shared      <- .pooled_select(X, Y, model_chains, model, standardize, grid,
                                   selection_set, criterion, search)
     best_select <- rep(list(shared$best_select), nchains)
     select      <- rep(list(shared$select),      nchains)
@@ -790,9 +746,8 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   # Convert posterior draws back to original scale
   # -------------------------------
 
-  # summary helper: skip the (expensive) rhat/ESS convergence measures when
-  # diagnostics = FALSE (e.g. large simulation studies).
-  .summ <- function(rv) if (diagnostics) posterior::summarize_draws(rv) else posterior::summarize_draws(rv, "mean", "median", "sd", "mad", "quantile2")
+  # summary helper: full posterior summary incl. rank-normalized split-Rhat / ESS.
+  .summ <- function(rv) posterior::summarize_draws(rv)
 
   if (standardize == TRUE) {
     for (chain in 1:nchains) {
@@ -901,7 +856,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   # matches the summary tables:
   # intercept (1 row), beta_1..p (p rows), sigma2 (1 row).
   # -------------------------------
-  if (diagnostics) {
+  {  # convergence diagnostics (always computed)
   .as3d <- function(m) array(m, dim = c(nrow(m), ncol(m), 1L))  # [np,D] -> [np,D,1]
 
   # Two sets of selected-model draws: PROJECTED (pushforward = actual MCMC draws)
@@ -978,55 +933,9 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   if (is.finite(rhat_sel_max) && rhat_sel_max > 1.01) {
     warning(sprintf("Selected model (projected draws) may not have converged. Please increase burn-in or posterior samples. The maximum rank-normalized split-Rhat is %.3f. All chains are projected onto the same pooled submodel, so this reflects sampler convergence on that submodel rather than disagreement about which variables were selected.", rhat_sel_max))
   }
-  }  # end if(diagnostics)
+  }  # end convergence diagnostics
 
 
-  # -------------------------------
-  # 16b. Rubin's-rules intervals (optional, RR = TRUE)
-  #
-  # Classic normal-approximation Rubin combination on the CALIBRATED per-imputation
-  # posterior of the selected model, as a comparison to the shape-aware pooled-
-  # mixture credible interval (the default output). For each coefficient:
-  #   beta_bar = (1/D) sum_d E[beta_j^d | y]      (= pooled-mixture mean; unchanged)
-  #   Wbar     = (1/D) sum_d Var(beta_j^d | y)    (within = posterior variance)
-  #   B        = (1/(D-1)) sum_d (E[beta_j^d|y] - beta_bar)^2   (between, centred)
-  #   T        = Wbar + (1 + 1/D) * B
-  #   CI       = beta_bar +/- qnorm(0.975) * sqrt(T)      (normal, no t)
-  # Non-selected coefficients have a degenerate (zero) posterior -> CI = [0, 0];
-  # the single shared sigma^2 gets no interval (NA). Draws are pooled across chains,
-  # matching the pooled-mixture summary. Rows align with summary_table_select:
-  # intercept (1), beta_1..p (p), sigma2 (1).
-  # -------------------------------
-  if (isTRUE(RR)) {
-    .rubin_rr <- function(arr_list) {
-      # arr_list: list over chains, each array [npost, D, K]; pool draws across chains.
-      arr  <- if (length(arr_list) == 1L) arr_list[[1]] else abind::abind(arr_list, along = 1)
-      Dloc <- dim(arr)[2]; K <- dim(arr)[3]; z <- stats::qnorm(0.975)
-      out  <- matrix(NA_real_, nrow = K, ncol = 2)
-      for (k in seq_len(K)) {
-        m    <- matrix(arr[, , k], ncol = Dloc)      # [Ndraws, D]
-        mu   <- colMeans(m)                          # per-imputation posterior mean
-        Wd   <- apply(m, 2, stats::var)              # per-imputation posterior variance
-        bbar <- mean(mu); Wbar <- mean(Wd)
-        B    <- if (Dloc > 1) sum((mu - bbar)^2) / (Dloc - 1) else 0
-        Tt   <- Wbar + (1 + 1 / Dloc) * B
-        out[k, ] <- bbar + c(-1, 1) * z * sqrt(Tt)
-      }
-      out
-    }
-    if (standardize == TRUE) {
-      beta_list <- lapply(posterior_best_models, function(ch) ch$post_beta_original)
-      int_list  <- lapply(posterior_best_models, function(ch) array(ch$post_alpha_original, dim = c(npost, D, 1L)))
-    } else {
-      beta_list <- lapply(posterior_best_models, function(ch) ch$post_beta)
-      int_list  <- lapply(posterior_best_models, function(ch) array(ch$post_alpha, dim = c(npost, D, 1L)))
-    }
-    rr_all <- rbind(.rubin_rr(int_list), .rubin_rr(beta_list), c(NA_real_, NA_real_))
-    if (nrow(rr_all) == nrow(summary_table_select)) {
-      summary_table_select[["rr_lower"]] <- rr_all[, 1]
-      summary_table_select[["rr_upper"]] <- rr_all[, 2]
-    }
-  }
 
 
   # -------------------------------
@@ -1039,7 +948,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, SNC = TRUE, grid = seq(0, 
   pooled <- NULL
   if (nchains > 1) {
     pooled <- tryCatch(
-      .pooled_multichain(X, Y, model_chains, model, standardize, SNC, grid,
+      .pooled_multichain(X, Y, model_chains, model, standardize, grid,
                          selection_set, criterion, search,
                          if (standardize) X_norm else NULL,
                          if (standardize) X_mean else NULL,

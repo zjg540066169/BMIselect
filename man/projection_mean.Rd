@@ -31,21 +31,4 @@ Given posterior means of \code{beta1_mat} (and optional intercepts
 datasets, compute the predictive projection onto the submodel defined by
 \code{xs_vec}.  Returns the projected coefficients (and intercepts, if requested).
 }
-\examples{
-# Simulate a single imputation with n=50, p=5:
-D <- 3; n <- 50; p <- 5
-X_arr <- array(rnorm(D * n * p), c(D, n, p))
-beta1_mat <- matrix(rnorm(D * p), nrow = D)
-# Suppose full-model sigma2 pooled is 1.2
-sigma2 <- 1.2
-# Project onto predictors 1 and 4 only:
-xs_vec <- c(TRUE, FALSE, FALSE, TRUE, FALSE)
-proj <- projection_mean(X_arr, beta1_mat, xs_vec, sigma2)
-str(proj)
-
-# With intercept:
-alpha1_vec <- rnorm(D)
-proj2 <- projection_mean(X_arr, beta1_mat, xs_vec, sigma2, alpha1_vec)
-str(proj2)
-
-}
+\keyword{internal}

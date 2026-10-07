@@ -43,24 +43,7 @@ compute_mi_bic <- function(X_arr, Y_arr, beta, df, alpha = NULL) {
 #'   \item{\code{alpha2_vec}}{(If \code{alpha1_vec} provided) numeric vector length \code{D} of projected intercepts.}
 #' }
 #'
-#' @examples
-#' # Simulate a single imputation with n=50, p=5:
-#' D <- 3; n <- 50; p <- 5
-#' X_arr <- array(rnorm(D * n * p), c(D, n, p))
-#' beta1_mat <- matrix(rnorm(D * p), nrow = D)
-#' # Suppose full-model sigma2 pooled is 1.2
-#' sigma2 <- 1.2
-#' # Project onto predictors 1 and 4 only:
-#' xs_vec <- c(TRUE, FALSE, FALSE, TRUE, FALSE)
-#' proj <- projection_mean(X_arr, beta1_mat, xs_vec, sigma2)
-#' str(proj)
-#'
-#' # With intercept:
-#' alpha1_vec <- rnorm(D)
-#' proj2 <- projection_mean(X_arr, beta1_mat, xs_vec, sigma2, alpha1_vec)
-#' str(proj2)
-#'
-#' @export
+#' @keywords internal
 projection_mean <- function(X_arr,
                             beta1_mat,
                             xs_vec,
@@ -171,20 +154,7 @@ projection_mean <- function(X_arr,
 #'   \item{\code{sigma2_opt}}{Numeric vector length \code{npost} of projected residual variances.}
 #' }
 #'
-#' @examples
-#' D <- 3; n <- 50; p <- 5; npost <- 100
-#' X_arr      <- array(rnorm(D*n*p), c(D, n, p))
-#' beta1_arr  <- array(rnorm(npost*D*p), c(npost, D, p))
-#' sigma1_vec <- runif(npost, 0.5, 2)
-#' xs_vec     <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
-#' # Without intercept
-#' proj <- projection_posterior(X_arr, beta1_arr, sigma1_vec, xs_vec)
-#' str(proj)
-#' # With intercept draws
-#' alpha1_arr <- matrix(rnorm(npost*D), nrow = npost, ncol = D)
-#' proj2 <- projection_posterior(X_arr, beta1_arr, sigma1_vec, xs_vec, alpha1_arr)
-#' str(proj2)
-#' @export
+#' @keywords internal
 projection_posterior <- function(X_arr,
                                  beta1_arr,
                                  sigma1_vec,
