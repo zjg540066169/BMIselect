@@ -26,6 +26,7 @@ Imports:
     Rfast,
     foreach,
     doParallel,
+    parallel,
     arm,
     mice,
     abind,

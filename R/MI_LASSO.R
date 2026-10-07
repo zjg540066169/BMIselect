@@ -87,7 +87,13 @@ MI_LASSO = function(X, Y, lamvec = (2^(seq(-1,4,by=0.05)))^2/2, maxiter=200, eps
   }
 
   if(ncores > 1 & length(lamvec) > 1){
-    doParallel::registerDoParallel(ncores)
+    ## Workers are fresh R sessions: they inherit neither this session's library
+    ## paths nor the package namespace, so hand both over before running tasks.
+    cl <- parallel::makePSOCKcluster(ncores)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    parallel::clusterCall(cl, function(paths) .libPaths(paths), .libPaths())
+    parallel::clusterEvalQ(cl, loadNamespace("BMIselect"))
+    doParallel::registerDoParallel(cl)
   }else{
     foreach::registerDoSEQ()
   }

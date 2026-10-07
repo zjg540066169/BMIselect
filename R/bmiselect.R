@@ -302,7 +302,7 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   # products / Cholesky factorizations that drive every Gibbs update.  Even with
   # an identical seed, the last-bit rounding differences between runs amplify
   # through the MCMC recursion (a chaotic map) into visibly different posterior
-  # draws -- and hence different SNC candidate sets and different BIC selections.
+  # draws -- and hence different candidate sets and different BIC selections.
   # When `seed` is supplied the user is asking for reproducibility, so we pin the
   # BLAS thread count to 1 for the duration of the fit and restore the caller's
   # environment on exit.  (No effect when seed = NULL: full multithreaded speed.)
@@ -414,7 +414,13 @@ BMI_LASSO = function(X, Y, model, standardize = TRUE, search = "grid", grid = se
   if (ncores == 1) {
     foreach::registerDoSEQ()
   } else {
-    doParallel::registerDoParallel(ncores)
+    ## Workers are fresh R sessions: they inherit neither this session's library
+    ## paths nor the package namespace, so hand both over before running tasks.
+    cl <- parallel::makePSOCKcluster(ncores)
+    on.exit(parallel::stopCluster(cl), add = TRUE)
+    parallel::clusterCall(cl, function(paths) .libPaths(paths), .libPaths())
+    parallel::clusterEvalQ(cl, loadNamespace("BMIselect"))
+    doParallel::registerDoParallel(cl)
   }
 
   `%dopar%` <- foreach::`%dopar%`
