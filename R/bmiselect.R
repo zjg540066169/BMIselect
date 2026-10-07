@@ -187,7 +187,7 @@ if (getRversion() >= "2.15.1") {
 #' multiply-imputed datasets, using one of four priors: Multi-Laplace,
 #' Horseshoe, ARD, or Spike-Laplace. Automatically standardizes data,
 #' runs MCMC in parallel, performs variable selection via four-step
-#' projection predictive variable selection, and selects a final submodel.
+#' projection predictive variable selection, and selects a final submodel by BIC.
 #'
 #' @param X A numeric matrix or array of predictors.  If a matrix \code{n × p},
 #'   it is taken as one imputation; if an array \code{D × n × p}, each slice
@@ -247,7 +247,7 @@ if (getRversion() >= "2.15.1") {
 #'   \item{\code{select}}{List of length \code{nchains} of logical matrices showing
 #'     which variables are selected at each grid value.}
 #'   \item{\code{best_select}}{List of length \code{nchains} of the single best
-#'     selection for each chain.}
+#'     selection (by BIC) for each chain.}
 #'   \item{\code{posterior_best_models}}{List of length \code{nchains} of projected
 #'     posterior draws for the best submodel.}
 #'   \item{\code{bic_models}}{List of length \code{nchains} of BIC values and

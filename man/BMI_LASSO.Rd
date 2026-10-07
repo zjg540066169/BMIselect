@@ -102,7 +102,7 @@ A named list with elements:
 \item{\code{select}}{List of length \code{nchains} of logical matrices showing
 which variables are selected at each grid value.}
 \item{\code{best_select}}{List of length \code{nchains} of the single best
-selection for each chain.}
+selection (by BIC) for each chain.}
 \item{\code{posterior_best_models}}{List of length \code{nchains} of projected
 posterior draws for the best submodel.}
 \item{\code{bic_models}}{List of length \code{nchains} of BIC values and
@@ -130,7 +130,7 @@ Fit a Bayesian multiple-imputation LASSO (BMI-LASSO) model across
 multiply-imputed datasets, using one of four priors: Multi-Laplace,
 Horseshoe, ARD, or Spike-Laplace. Automatically standardizes data,
 runs MCMC in parallel, performs variable selection via four-step
-projection predictive variable selection, and selects a final submodel.
+projection predictive variable selection, and selects a final submodel by BIC.
 }
 \examples{
 sim <- sim_A(n = 100, p = 20, type = "MAR", SNP = 1.5, low_missing = TRUE, n_imp = 5, seed = 123)
